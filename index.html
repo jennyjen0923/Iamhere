@@ -8,7 +8,7 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{font-family:'Georgia','Times New Roman',serif;background:#0f0e17;color:#fff;height:100vh;overflow:hidden;user-select:none;}
 
-.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;transition:opacity .7s ease,transform .7s ease;}
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;transition:opacity 1s ease,transform .7s ease;}
 .screen.hidden{opacity:0;pointer-events:none;transform:translateY(14px);}
 
 #loading{position:fixed;inset:0;background:#0f0e17;z-index:200;display:flex;align-items:center;justify-content:center;transition:opacity 1s;}
@@ -28,7 +28,16 @@ body{font-family:'Georgia','Times New Roman',serif;background:#0f0e17;color:#fff
 .mood-single{display:flex;align-items:center;gap:1.4rem;}
 .mood-arr{background:none;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.52);border-radius:50%;width:40px;height:40px;font-size:1.4rem;cursor:pointer;transition:all .25s;font-family:inherit;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .mood-arr:hover{border-color:rgba(255,255,255,.55);color:#fff;background:rgba(255,255,255,.07);}
-.mood-label{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.22);border-radius:50px;padding:.72rem 2rem;font-size:.98rem;color:#fff;letter-spacing:.07em;min-width:190px;text-align:center;transition:opacity .18s ease;}
+.mood-label-viewport{min-width:190px;height:2.7rem;overflow:hidden;position:relative;}
+.mood-label{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.22);border-radius:50px;padding:.72rem 2rem;font-size:.98rem;color:#fff;letter-spacing:.07em;white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;position:absolute;top:0;left:0;right:0;bottom:0;}
+@keyframes moodEnterLeft {from{opacity:0;transform:translateX(100%)}to{opacity:1;transform:translateX(0)}}
+@keyframes moodEnterRight{from{opacity:0;transform:translateX(-100%)}to{opacity:1;transform:translateX(0)}}
+@keyframes moodExitLeft  {from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(-100%)}}
+@keyframes moodExitRight {from{opacity:1;transform:translateX(0)}to{opacity:0;transform:translateX(100%)}}
+.mood-label.enter-left {animation:moodEnterLeft .38s cubic-bezier(.4,0,.2,1) forwards;}
+.mood-label.enter-right{animation:moodEnterRight .38s cubic-bezier(.4,0,.2,1) forwards;}
+.mood-label.exit-left  {animation:moodExitLeft  .38s cubic-bezier(.4,0,.2,1) forwards;}
+.mood-label.exit-right {animation:moodExitRight .38s cubic-bezier(.4,0,.2,1) forwards;}
 .nxt{margin-top:2.2rem;background:none;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.52);padding:.58rem 1.8rem;border-radius:50px;font-size:.86rem;cursor:pointer;letter-spacing:.1em;transition:all .3s;opacity:0;pointer-events:none;font-family:inherit;}
 .nxt.vis{opacity:1;pointer-events:all;}
 .nxt:hover{border-color:rgba(255,255,255,.52);color:#fff;}
@@ -60,7 +69,7 @@ body{font-family:'Georgia','Times New Roman',serif;background:#0f0e17;color:#fff
 #sanctuary-time-panel.vis{display:flex;}
 #sanctuary-time-panel.fade{opacity:1;}
 /* Background crossfade overlay */
-#scene-bg-next{position:fixed;inset:0;z-index:0;opacity:0;transition:opacity 1.4s ease;pointer-events:none;}
+#scene-bg-next{position:fixed;inset:0;z-index:0;opacity:0;transition:opacity 2.2s cubic-bezier(.4,0,.2,1);pointer-events:none;}
 
 /* SANCTUARY */
 #sanctuary{padding:0;}
@@ -135,7 +144,7 @@ input[type=range]::-moz-range-thumb{width:11px;height:11px;border-radius:50%;bac
 .disc-close:hover{border-color:rgba(255,255,255,.5);color:#fff;}
 
 /* NAME INPUT SCREEN */
-#name-input{background:linear-gradient(160deg,#12082a 0%,#3b1248 40%,#7a2d5e 75%,#aa4a42 100%);}
+#name-input{background:linear-gradient(160deg,#090912 0%,#0f0e1f 45%,#1a1230 100%);transition:background 1.8s ease;}
 .name-q{font-size:.9rem;color:rgba(255,255,255,.52);letter-spacing:.14em;margin-bottom:1.6rem;text-align:center;}
 .name-wrap{display:flex;align-items:center;gap:.8rem;}
 .name-field{background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.28);color:#fff;font-size:1.1rem;letter-spacing:.1em;padding:.55rem .4rem;outline:none;font-family:inherit;width:190px;text-align:center;transition:border-color .3s;}
@@ -147,7 +156,7 @@ input[type=range]::-moz-range-thumb{width:11px;height:11px;border-radius:50%;bac
 .name-skip:hover{color:rgba(255,255,255,.48);}
 
 /* WELCOME MSG SCREEN */
-#welcome-msg{background:linear-gradient(160deg,#12082a 0%,#3b1248 40%,#7a2d5e 75%,#aa4a42 100%);}
+#welcome-msg{background:linear-gradient(160deg,#1a0a05 0%,#3d1608 30%,#7a3010 60%,#c26030 85%,#e8945a 100%);}
 .wm-text{font-size:.9rem;line-height:2.3;color:rgba(255,255,255,.86);letter-spacing:.06em;text-align:center;max-width:310px;opacity:0;transform:translateY(12px);transition:opacity 1.4s ease,transform 1.4s ease;white-space:pre-line;}
 .wm-text.show{opacity:1;transform:translateY(0);}
 .wm-btn{margin-top:2.6rem;background:none;border:1px solid rgba(255,255,255,.26);color:rgba(255,255,255,.62);padding:.7rem 2.2rem;border-radius:50px;font-size:.86rem;cursor:pointer;letter-spacing:.12em;transition:all .3s;font-family:inherit;opacity:0;pointer-events:none;}
@@ -191,25 +200,27 @@ input[type=range]::-moz-range-thumb{width:11px;height:11px;border-radius:50%;bac
 
 <div id="loading"><div class="ldot"></div><div class="ldot"></div><div class="ldot"></div></div>
 
-<div class="screen" id="welcome" style="position:relative;">
+<div class="screen" id="welcome">
   <h1>你不用做什麼<br>只是來這裡休息一下</h1>
   <p>這裡有一個地方，一直為你留著</p>
   <button class="enter-btn" id="enter-btn">進來</button>
   <button class="disc-open-btn" onclick="showDisclaimer()">使用聲明</button>
 </div>
 
-<div class="screen hidden" id="mood" style="position:relative;">
+<div class="screen hidden" id="mood">
   <button class="s-back" onclick="goTo('welcome')">← 返回</button>
   <p class="pick-title">你現在是什麼狀態？</p>
   <div class="mood-single">
     <button class="mood-arr" onclick="moveMood(-1)">‹</button>
-    <div class="mood-label" id="mood-label"></div>
+    <div class="mood-label-viewport" id="mood-label-viewport">
+      <div class="mood-label" id="mood-label"></div>
+    </div>
     <button class="mood-arr" onclick="moveMood(1)">›</button>
   </div>
   <button class="nxt vis" id="mood-nxt">繼續 →</button>
 </div>
 
-<div class="screen hidden" id="name-input" style="position:relative;">
+<div class="screen hidden" id="name-input">
   <button class="s-back" onclick="goTo('mood')">← 返回</button>
   <p class="name-q">你想讓我怎麼稱呼你？</p>
   <div class="name-wrap">
@@ -219,13 +230,13 @@ input[type=range]::-moz-range-thumb{width:11px;height:11px;border-radius:50%;bac
   <p class="name-skip" onclick="submitName()">跳過</p>
 </div>
 
-<div class="screen hidden" id="welcome-msg" style="position:relative;">
+<div class="screen hidden" id="welcome-msg">
   <button class="s-back" onclick="goTo('name-input')">← 返回</button>
   <p class="wm-text" id="wm-text"></p>
   <button class="wm-btn" id="wm-btn" onclick="goToSceneSelect()">選擇你想待的地方 →</button>
 </div>
 
-<div class="screen hidden" id="scene-screen" style="padding:0;position:relative;">
+<div class="screen hidden" id="scene-screen" style="padding:0;">
   <div class="carousel-viewport" id="carousel-vp">
     <div class="carousel-track" id="carousel-track"></div>
   </div>
@@ -796,15 +807,31 @@ function goBack() {
 // ─── MOOD PICKER ────────────────────────────────────────────────
 function buildMoodPicker() {
   moodIdx=0; selMood=moods[0];
-  document.getElementById('mood-label').textContent=moods[0].label;
+  const vp=document.getElementById('mood-label-viewport');
+  vp.innerHTML='';
+  const pill=document.createElement('div');
+  pill.className='mood-label'; pill.id='mood-label';
+  pill.textContent=moods[0].label;
+  vp.appendChild(pill);
 }
 function moveMood(dir) {
   ensureAudio(); clickSound();
   moodIdx=(moodIdx+dir+moods.length)%moods.length;
   selMood=moods[moodIdx];
-  const el=document.getElementById('mood-label');
-  el.style.opacity='0';
-  setTimeout(()=>{ el.textContent=moods[moodIdx].label; el.style.opacity='1'; },180);
+  const vp=document.getElementById('mood-label-viewport');
+  const old=vp.querySelector('.mood-label');
+
+  // New pill enters from opposite side
+  const next=document.createElement('div');
+  next.className='mood-label ' + (dir>0?'enter-left':'enter-right');
+  next.textContent=moods[moodIdx].label;
+  vp.appendChild(next);
+
+  // Old pill exits
+  if(old){
+    old.classList.add(dir>0?'exit-left':'exit-right');
+    setTimeout(()=>{ if(old.parentNode) old.parentNode.removeChild(old); },420);
+  }
 }
 
 // ─── INFINITE CAROUSEL ─────────────────────────────────────────
@@ -964,15 +991,21 @@ function changeTime(timeId,btn) {
 
   // Background gradient crossfade via overlay div
   const next=document.getElementById('scene-bg-next');
+  // Cancel any in-progress transition by removing transition temporarily
+  next.style.transition='none';
+  next.style.opacity='0';
   next.style.background=selScene.times[timeId].grad;
-  // force reflow then fade in
-  next.getBoundingClientRect();
+  next.getBoundingClientRect(); // force reflow
+  next.style.transition='';
   next.style.opacity='1';
   setTimeout(()=>{
     document.getElementById('scene-bg').style.background=selScene.times[timeId].grad;
+    next.style.transition='none';
     next.style.opacity='0';
-    setTimeout(()=>{ next.style.background=''; },200);
-  },1450);
+    next.getBoundingClientRect();
+    next.style.transition='';
+    setTimeout(()=>{ next.style.background=''; },50);
+  },2300);
 
   // Update figure glow
   renderFigure(selScene.id,selScene.times[timeId].glow);
@@ -995,8 +1028,7 @@ function backToTimeSelect() {
   document.getElementById('scene-bg-next').style.opacity='0';
   document.getElementById('scene-fx').innerHTML='';
   document.getElementById('fig-wrap').innerHTML='';
-  const bubble=document.getElementById('msg-bubble');
-  bubble.classList.remove('show','hide'); bubble.textContent='';
+
   document.getElementById('mute-btn').style.display='none';
   document.getElementById('prev-btn').style.display='none';
   document.getElementById('back-btn').style.display='none';
@@ -1011,11 +1043,15 @@ function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random
 function addSanctuaryMsg() {
   const container=document.getElementById('msg-container');
   if(!container) return;
-  // If at max, remove oldest first
+  // If at max, remove oldest first then continue to add new message
   if(activeMsgCount>=MAX_MSGS){
     const oldest=container.querySelector('.msg-bubble');
-    if(oldest){ oldest.classList.remove('show'); oldest.classList.add('out'); setTimeout(()=>{if(oldest.parentNode)oldest.parentNode.removeChild(oldest); activeMsgCount=Math.max(0,activeMsgCount-1);},900); }
-    return;
+    if(oldest){
+      if(oldest._ft) clearTimeout(oldest._ft);
+      oldest.classList.remove('show'); oldest.classList.add('out');
+      setTimeout(()=>{if(oldest.parentNode)oldest.parentNode.removeChild(oldest);},900);
+      activeMsgCount=Math.max(0,activeMsgCount-1);
+    }
   }
   const txt=msgList[msgIdx%msgList.length]; msgIdx++;
   const el=document.createElement('div'); el.className='msg-bubble';
