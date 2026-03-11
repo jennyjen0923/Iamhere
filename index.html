@@ -23,7 +23,17 @@ body{font-family:'Georgia','Times New Roman',serif;background:#0f0e17;color:#fff
 .enter-btn{margin-top:2.8rem;background:none;border:1px solid rgba(255,255,255,.26);color:rgba(255,255,255,.62);padding:.75rem 2.8rem;border-radius:50px;font-size:.93rem;cursor:pointer;letter-spacing:.12em;transition:all .3s;font-family:inherit;}
 .enter-btn:hover{border-color:rgba(255,255,255,.68);color:#fff;}
 
-/* MOOD */
+/* HOW-TO SCREEN */
+#how-to{background:#0f0e17;}
+.how-to-title{font-size:.72rem;color:rgba(255,255,255,.28);letter-spacing:.22em;margin-bottom:2rem;text-align:center;}
+.how-to-steps{display:flex;flex-direction:column;gap:1rem;width:100%;max-width:280px;}
+.how-to-step{display:flex;align-items:center;gap:1rem;opacity:0;transform:translateY(8px);transition:opacity .65s ease,transform .65s ease;}
+.how-to-step.show{opacity:1;transform:translateY(0);}
+.how-step-num{width:26px;height:26px;border-radius:50%;border:1px solid rgba(255,255,255,.16);color:rgba(255,255,255,.28);font-size:.68rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;letter-spacing:0;}
+.how-step-text{font-size:.88rem;color:rgba(255,255,255,.6);letter-spacing:.06em;line-height:1.7;}
+.how-to-btn{margin-top:2.6rem;background:none;border:1px solid rgba(255,255,255,.22);color:rgba(255,255,255,.52);padding:.72rem 2.6rem;border-radius:50px;font-size:.9rem;cursor:pointer;letter-spacing:.12em;transition:all .3s;font-family:inherit;opacity:0;pointer-events:none;}
+.how-to-btn.vis{opacity:1;pointer-events:all;}
+.how-to-btn:hover{border-color:rgba(255,255,255,.62);color:#fff;}
 .pick-title{font-size:.95rem;color:rgba(255,255,255,.48);letter-spacing:.14em;margin-bottom:1.8rem;text-align:center;}
 .mood-single{display:flex;align-items:center;gap:1.4rem;}
 .mood-arr{background:none;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.52);border-radius:50%;width:40px;height:40px;font-size:1.4rem;cursor:pointer;transition:all .25s;font-family:inherit;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
@@ -207,8 +217,20 @@ input[type=range]::-moz-range-thumb{width:11px;height:11px;border-radius:50%;bac
   <button class="disc-open-btn" onclick="showDisclaimer()">使用聲明</button>
 </div>
 
-<div class="screen hidden" id="mood">
+<div class="screen hidden" id="how-to">
   <button class="s-back" onclick="goTo('welcome')">← 返回</button>
+  <p class="how-to-title">使用說明</p>
+  <div class="how-to-steps">
+    <div class="how-to-step"><div class="how-step-num">1</div><div class="how-step-text">打開聲音到舒適的音量</div></div>
+    <div class="how-to-step"><div class="how-step-num">2</div><div class="how-step-text">選擇最符合你的狀態</div></div>
+    <div class="how-to-step"><div class="how-step-num">3</div><div class="how-step-text">選擇你想躺下的環境、時間</div></div>
+    <div class="how-to-step"><div class="how-step-num">4</div><div class="how-step-text">好好的被接住</div></div>
+  </div>
+  <button class="how-to-btn" id="how-to-btn" onclick="enterMood()">我準備好了 →</button>
+</div>
+
+<div class="screen hidden" id="mood">
+  <button class="s-back" onclick="goTo('how-to')">← 返回</button>
   <p class="pick-title">你現在是什麼狀態？</p>
   <div class="mood-single">
     <button class="mood-arr" onclick="moveMood(-1)">‹</button>
@@ -1150,9 +1172,22 @@ window.addEventListener('load',()=>{
 });
 document.getElementById('enter-btn').onclick=()=>{
   ensureAudio(); clickSound();
-  buildMoodPicker(); // reset picker on every entry (fixes re-entry bug)
-  goTo('mood');
+  showHowTo();
 };
+function showHowTo() {
+  goTo('how-to');
+  const steps=document.querySelectorAll('.how-to-step');
+  steps.forEach(s=>{ s.classList.remove('show'); });
+  const btn=document.getElementById('how-to-btn');
+  btn.classList.remove('vis');
+  steps.forEach((s,i)=>setTimeout(()=>s.classList.add('show'), 200+i*180));
+  setTimeout(()=>btn.classList.add('vis'), 200+steps.length*180+250);
+}
+function enterMood() {
+  clickSound();
+  buildMoodPicker();
+  goTo('mood');
+}
 document.getElementById('mood-nxt').onclick=()=>{
   clickSound();
   document.getElementById('name-field').value=''; // clear previous name
