@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>你可以在這裡休息</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Georgia','Times New Roman',serif;background:#0f0e17;color:#fff;height:100vh;overflow:hidden;user-select:none;}
+
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;transition:opacity .7s ease,transform .7s ease;}
+.screen.hidden{opacity:0;pointer-events:none;transform:translateY(14px);}
+
+#loading{position:fixed;inset:0;background:#0f0e17;z-index:200;display:flex;align-items:center;justify-content:center;transition:opacity 1s;}
+#loading.gone{opacity:0;pointer-events:none;}
+.ldot{width:7px;height:7px;background:rgba(255,255,255,.35);border-radius:50%;margin:0 4px;animation:lblink 1.2s ease-in-out infinite;}
+.ldot:nth-child(2){animation-delay:.2s;}.ldot:nth-child(3){animation-delay:.4s;}
+@keyframes lblink{0%,100%{opacity:.2}50%{opacity:1}}
+
+/* WELCOME */
+#welcome h1{font-size:clamp(1.4rem,3.8vw,2.1rem);font-weight:300;letter-spacing:.1em;text-align:center;line-height:1.9;color:rgba(255,255,255,.88);}
+#welcome p{margin-top:1rem;font-size:.9rem;color:rgba(255,255,255,.38);text-align:center;letter-spacing:.08em;}
+.enter-btn{margin-top:2.8rem;background:none;border:1px solid rgba(255,255,255,.26);color:rgba(255,255,255,.62);padding:.75rem 2.8rem;border-radius:50px;font-size:.93rem;cursor:pointer;letter-spacing:.12em;transition:all .3s;font-family:inherit;}
+.enter-btn:hover{border-color:rgba(255,255,255,.68);color:#fff;}
+
+/* MOOD */
+.pick-title{font-size:.95rem;color:rgba(255,255,255,.48);letter-spacing:.14em;margin-bottom:1.8rem;text-align:center;}
+.mood-single{display:flex;align-items:center;gap:1.4rem;}
+.mood-arr{background:none;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.52);border-radius:50%;width:40px;height:40px;font-size:1.4rem;cursor:pointer;transition:all .25s;font-family:inherit;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.mood-arr:hover{border-color:rgba(255,255,255,.55);color:#fff;background:rgba(255,255,255,.07);}
+.mood-label{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.22);border-radius:50px;padding:.72rem 2rem;font-size:.98rem;color:#fff;letter-spacing:.07em;min-width:190px;text-align:center;transition:opacity .18s ease;}
+.nxt{margin-top:2.2rem;background:none;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.52);padding:.58rem 1.8rem;border-radius:50px;font-size:.86rem;cursor:pointer;letter-spacing:.1em;transition:all .3s;opacity:0;pointer-events:none;font-family:inherit;}
+.nxt.vis{opacity:1;pointer-events:all;}
+.nxt:hover{border-color:rgba(255,255,255,.52);color:#fff;}
+
+/* CAROUSEL */
+#scene-screen{padding:0;overflow:hidden;background:#0f0e17;}
+.carousel-viewport{position:relative;width:100%;height:100%;overflow:hidden;}
+.carousel-track{display:flex;height:100%;will-change:transform;}
+.c-slide{min-width:100vw;height:100vh;position:relative;display:flex;flex-direction:column;justify-content:center;align-items:center;overflow:hidden;cursor:pointer;}
+.slide-particles{position:absolute;inset:0;pointer-events:none;}
+.slide-overlay{position:absolute;inset:0;background:rgba(0,0,0,.38);pointer-events:none;}
+.scene-pick-label{position:absolute;top:2.2rem;left:50%;transform:translateX(-50%);font-size:.75rem;color:rgba(255,255,255,.32);letter-spacing:.2em;text-align:center;white-space:nowrap;z-index:5;}
+.slide-info{position:relative;z-index:2;padding:2rem;text-align:center;display:flex;flex-direction:column;align-items:center;}
+.slide-name{font-size:1.8rem;font-weight:300;letter-spacing:.18em;margin-bottom:1rem;}
+.slide-desc{font-size:.88rem;color:rgba(255,255,255,.62);line-height:1.9;letter-spacing:.06em;max-width:280px;}
+.slide-tap-hint{margin-top:1.6rem;font-size:.72rem;color:rgba(255,255,255,.3);letter-spacing:.12em;animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:.28}50%{opacity:.65}}
+.dot-row{position:absolute;bottom:1.8rem;left:50%;transform:translateX(-50%);display:flex;gap:.5rem;z-index:10;}
+.dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.22);transition:all .3s;}
+.dot.active{background:#fff;width:16px;border-radius:3px;}
+.c-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:10;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:50%;width:42px;height:42px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .25s;font-size:1rem;color:rgba(255,255,255,.55);}
+.c-arrow:hover{background:rgba(255,255,255,.17);color:#fff;}
+#c-prev{left:1rem;}#c-next{right:1rem;}
+
+/* SANCTUARY TIME PANEL */
+.t-btn{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);border-radius:50px;padding:.52rem 1.25rem;font-size:.83rem;cursor:pointer;letter-spacing:.08em;transition:all .25s;color:rgba(255,255,255,.68);font-family:inherit;}
+.t-btn:hover,.t-btn.sel{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.48);color:#fff;}
+#sanctuary-time-panel{position:fixed;bottom:5.2rem;left:50%;transform:translateX(-50%);display:none;gap:.65rem;z-index:12;justify-content:center;flex-wrap:wrap;opacity:0;transition:opacity .8s ease;}
+#sanctuary-time-panel.vis{display:flex;}
+#sanctuary-time-panel.fade{opacity:1;}
+/* Background crossfade overlay */
+#scene-bg-next{position:fixed;inset:0;z-index:0;opacity:0;transition:opacity 1.4s ease;pointer-events:none;}
+
+/* SANCTUARY */
+#sanctuary{padding:0;}
+.scene-bg{position:fixed;inset:0;z-index:0;transition:background 2s ease;}
+.scene-fx{position:fixed;inset:0;z-index:1;pointer-events:none;}
+.fig-wrap{position:fixed;bottom:16%;left:50%;transform:translateX(-50%);z-index:3;text-align:center;}
+.fig-svg{width:130px;opacity:0;animation:figIn 2s ease .4s forwards;}
+@keyframes figIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.fig-float{animation:gFloat 4.5s ease-in-out infinite;}
+@keyframes gFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.msg-center{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10;width:88%;max-width:350px;text-align:center;pointer-events:none;}
+.msg-bubble{display:inline-block;font-size:.95rem;line-height:2;color:rgba(255,255,255,.92);letter-spacing:.06em;text-shadow:0 2px 24px rgba(0,0,0,.9),0 0 40px rgba(0,0,0,.6);opacity:0;transition:opacity .9s ease,transform .9s ease;transform:translateY(8px);}
+.msg-bubble.show{opacity:1;transform:translateY(0);}
+.msg-bubble.hide{opacity:0;transform:translateY(-6px);}
+.sanctuary-tap-hint{display:block;margin-top:1.4rem;font-size:.68rem;color:rgba(255,255,255,.2);letter-spacing:.12em;animation:pulse 3.5s ease-in-out infinite;}
+/* Time-adjust hint above time panel */
+#time-adjust-hint{position:fixed;bottom:8.8rem;left:50%;transform:translateX(-50%);font-size:.62rem;color:rgba(255,255,255,.18);letter-spacing:.16em;z-index:12;display:none;opacity:0;transition:opacity 1s ease;white-space:nowrap;}
+#time-adjust-hint.vis{display:block;}
+#time-adjust-hint.fade{opacity:1;}
+/* Volume sliders panel */
+#vol-panel{position:fixed;top:4.6rem;right:1.1rem;z-index:20;display:none;flex-direction:column;gap:.55rem;opacity:0;transition:opacity .8s ease;}
+#vol-panel.vis{display:flex;}
+#vol-panel.fade{opacity:1;}
+.vol-row{display:flex;align-items:center;gap:.55rem;}
+.vol-label{font-size:.62rem;color:rgba(255,255,255,.3);letter-spacing:.05em;width:2.4rem;text-align:right;font-family:inherit;}
+input[type=range]{-webkit-appearance:none;appearance:none;width:76px;height:2px;background:rgba(255,255,255,.18);border-radius:2px;cursor:pointer;outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:11px;height:11px;border-radius:50%;background:rgba(255,255,255,.55);cursor:pointer;transition:background .2s;}
+input[type=range]::-webkit-slider-thumb:hover{background:rgba(255,255,255,.9);}
+input[type=range]::-moz-range-thumb{width:11px;height:11px;border-radius:50%;background:rgba(255,255,255,.55);cursor:pointer;border:none;}
+#mute-btn,#back-btn,#prev-btn{position:fixed;z-index:20;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.11);cursor:pointer;transition:all .3s;color:rgba(255,255,255,.48);font-family:inherit;}
+#mute-btn{top:1.1rem;right:1.1rem;border-radius:50%;width:38px;height:38px;font-size:1rem;display:none;align-items:center;justify-content:center;}
+#prev-btn{top:1.1rem;left:1.1rem;border-radius:50px;padding:.36rem .9rem;font-size:.73rem;letter-spacing:.08em;display:none;}
+#back-btn{top:3.4rem;left:1.1rem;border-radius:50px;padding:.36rem .9rem;font-size:.73rem;letter-spacing:.08em;display:none;}
+#mute-btn:hover,#back-btn:hover,#prev-btn:hover{color:#fff;border-color:rgba(255,255,255,.38);background:rgba(255,255,255,.13);}
+
+/* SCENE ANIMATIONS */
+.star{position:absolute;background:#fff;border-radius:50%;animation:twink ease-in-out infinite alternate;}
+@keyframes twink{from{opacity:.12}to{opacity:.82}}
+.cloud-shape{position:absolute;border-radius:50px;background:rgba(255,255,255,.1);animation:cdrift linear infinite;}
+@keyframes cdrift{from{transform:translateX(-220px)}to{transform:translateX(110vw)}}
+.ripple{position:absolute;border-radius:50%;border:1px solid rgba(255,255,255,.11);animation:rout 3.5s ease-out infinite;}
+@keyframes rout{0%{transform:scale(.4);opacity:.65}100%{transform:scale(3.5);opacity:0}}
+.bubble{position:absolute;border-radius:50%;background:rgba(120,190,255,.16);border:1px solid rgba(120,190,255,.22);animation:brise linear infinite;}
+@keyframes brise{from{transform:translateY(0);opacity:0}10%{opacity:.55}90%{opacity:.25}to{transform:translateY(-90vh);opacity:0}}
+.firefly{position:absolute;width:3px;height:3px;background:#b8ff9f;border-radius:50%;box-shadow:0 0 7px #b8ff9f;animation:ffmove ease-in-out infinite alternate;}
+@keyframes ffmove{from{transform:translate(0,0);opacity:.1}to{transform:translate(var(--fx),var(--fy));opacity:.92}}
+.rdrop{position:absolute;width:1px;background:linear-gradient(to bottom,transparent,rgba(155,185,255,.52));animation:rfall linear infinite;}
+@keyframes rfall{from{transform:translateY(-40px);opacity:0}10%{opacity:1}90%{opacity:1}to{transform:translateY(110vh);opacity:0}}
+.pool-tiles{position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent,transparent 49px,rgba(255,255,255,.045) 49px,rgba(255,255,255,.045) 51px),repeating-linear-gradient(0deg,transparent,transparent 49px,rgba(255,255,255,.045) 49px,rgba(255,255,255,.045) 51px);}
+.pool-lane{position:absolute;top:0;bottom:0;width:2px;background:rgba(200,220,255,.08);}
+.caustic{position:absolute;border-radius:40%;background:rgba(140,200,255,.07);filter:blur(9px);animation:causticShift ease-in-out infinite alternate;}
+@keyframes causticShift{0%{transform:scale(1) translate(0,0) rotate(0deg);opacity:.05}100%{transform:scale(1.6) translate(var(--cx),var(--cy)) rotate(25deg);opacity:.13}}
+.sand-sp{position:absolute;background:rgba(255,225,140,.45);border-radius:50%;animation:twink ease-in-out infinite alternate;}
+.wave-sh{position:absolute;bottom:0;left:0;right:0;height:35%;background:linear-gradient(to top,rgba(0,80,160,.32),transparent);animation:wpulse 5s ease-in-out infinite alternate;}
+@keyframes wpulse{from{transform:scaleY(1)}to{transform:scaleY(1.1)}}
+.leaf-par{position:absolute;width:2px;height:2px;background:rgba(110,200,90,.45);border-radius:50%;animation:lfmove ease-in-out infinite alternate;}
+@keyframes lfmove{from{transform:translate(0,0);opacity:.15}to{transform:translate(var(--lx),var(--ly));opacity:.75}}
+
+/* SCREEN BACK BUTTON */
+.s-back{position:absolute;top:1.3rem;left:1.3rem;background:none;border:none;color:rgba(255,255,255,.3);font-size:.75rem;cursor:pointer;letter-spacing:.08em;font-family:inherit;transition:color .2s;padding:.3rem .4rem;z-index:10;}
+.s-back:hover{color:rgba(255,255,255,.72);}
+
+/* DISCLAIMER */
+.disc-open-btn{position:absolute;bottom:1.5rem;left:50%;transform:translateX(-50%);background:none;border:none;color:rgba(255,255,255,.18);font-size:.64rem;cursor:pointer;letter-spacing:.12em;font-family:inherit;transition:color .22s;white-space:nowrap;}
+.disc-open-btn:hover{color:rgba(255,255,255,.52);}
+#disc-modal{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .4s ease;}
+#disc-modal.vis{opacity:1;pointer-events:all;}
+.disc-box{background:#1c1528;border:1px solid rgba(255,255,255,.11);border-radius:20px;padding:2.2rem 1.9rem;max-width:310px;width:88%;text-align:center;}
+.disc-title{font-size:.9rem;color:rgba(255,255,255,.7);letter-spacing:.14em;margin-bottom:1.1rem;}
+.disc-body{font-size:.8rem;color:rgba(255,255,255,.44);line-height:2;letter-spacing:.04em;margin-bottom:1.8rem;}
+.disc-close{background:none;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.55);padding:.5rem 1.6rem;border-radius:50px;font-size:.8rem;cursor:pointer;letter-spacing:.08em;font-family:inherit;transition:all .25s;}
+.disc-close:hover{border-color:rgba(255,255,255,.5);color:#fff;}
+
+/* NAME INPUT SCREEN */
+#name-input{background:linear-gradient(160deg,#12082a 0%,#3b1248 40%,#7a2d5e 75%,#aa4a42 100%);}
+.name-q{font-size:.9rem;color:rgba(255,255,255,.52);letter-spacing:.14em;margin-bottom:1.6rem;text-align:center;}
+.name-wrap{display:flex;align-items:center;gap:.8rem;}
+.name-field{background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,.28);color:#fff;font-size:1.1rem;letter-spacing:.1em;padding:.55rem .4rem;outline:none;font-family:inherit;width:190px;text-align:center;transition:border-color .3s;}
+.name-field::placeholder{color:rgba(255,255,255,.22);}
+.name-field:focus{border-bottom-color:rgba(255,255,255,.68);}
+.name-submit{background:none;border:1px solid rgba(255,255,255,.26);color:rgba(255,255,255,.6);border-radius:50%;width:38px;height:38px;font-size:1.1rem;cursor:pointer;transition:all .25s;font-family:inherit;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.name-submit:hover{border-color:#fff;color:#fff;background:rgba(255,255,255,.08);}
+.name-skip{margin-top:1.6rem;font-size:.68rem;color:rgba(255,255,255,.2);letter-spacing:.12em;cursor:pointer;transition:color .2s;}
+.name-skip:hover{color:rgba(255,255,255,.48);}
+
+/* WELCOME MSG SCREEN */
+#welcome-msg{background:linear-gradient(160deg,#12082a 0%,#3b1248 40%,#7a2d5e 75%,#aa4a42 100%);}
+.wm-text{font-size:.9rem;line-height:2.3;color:rgba(255,255,255,.86);letter-spacing:.06em;text-align:center;max-width:310px;opacity:0;transform:translateY(12px);transition:opacity 1.4s ease,transform 1.4s ease;white-space:pre-line;}
+.wm-text.show{opacity:1;transform:translateY(0);}
+.wm-btn{margin-top:2.6rem;background:none;border:1px solid rgba(255,255,255,.26);color:rgba(255,255,255,.62);padding:.7rem 2.2rem;border-radius:50px;font-size:.86rem;cursor:pointer;letter-spacing:.12em;transition:all .3s;font-family:inherit;opacity:0;pointer-events:none;}
+.wm-btn.vis{opacity:1;pointer-events:all;}
+.wm-btn:hover{border-color:rgba(255,255,255,.72);color:#fff;}
+
+/* MULTI-BUBBLE MESSAGE CONTAINER */
+#msg-container{display:flex;flex-direction:column;gap:.9rem;align-items:center;width:100%;}
+.msg-bubble{display:inline-block;font-size:.95rem;line-height:2;color:rgba(255,255,255,.92);letter-spacing:.06em;text-shadow:0 2px 24px rgba(0,0,0,.9),0 0 40px rgba(0,0,0,.6);opacity:0;transition:opacity .9s ease,transform .9s ease;transform:translateY(8px);}
+.msg-bubble.show{opacity:1;transform:translateY(0);}
+.msg-bubble.out{opacity:0;transform:translateY(-8px);}
+
+/* RWD — MOBILE */
+@media(max-width:390px){
+  #sanctuary-time-panel{bottom:4rem;gap:.38rem;}
+  .t-btn{padding:.44rem .85rem;font-size:.76rem;}
+  #vol-panel{top:3.6rem;right:.65rem;}
+  input[type=range]{width:58px;}
+  .mood-label{min-width:155px;padding:.65rem 1.3rem;}
+  .wm-text{font-size:.84rem;}
+  .msg-bubble{font-size:.88rem;}
+  .disc-box{padding:1.8rem 1.4rem;}
+}
+@media(max-height:620px){
+  .fig-wrap{bottom:10%;}
+  #sanctuary-time-panel{bottom:3.4rem;}
+  #time-adjust-hint{bottom:6.8rem;}
+  .msg-center{top:44%;}
+}
+</style>
+</head>
+<body>
+
+<div id="disc-modal">
+  <div class="disc-box">
+    <p class="disc-title">使用聲明</p>
+    <p class="disc-body">本服務為情緒陪伴工具，不具備任何醫療、心理治療或心理諮商功能，內容不構成任何醫療建議。若你正在經歷心理健康困難，請尋求專業醫療或心理健康服務。</p>
+    <button class="disc-close" onclick="hideDisclaimer()">我了解了</button>
+  </div>
+</div>
+
+<div id="loading"><div class="ldot"></div><div class="ldot"></div><div class="ldot"></div></div>
+
+<div class="screen" id="welcome" style="position:relative;">
+  <h1>你不用做什麼<br>只是來這裡休息一下</h1>
+  <p>這裡有一個地方，一直為你留著</p>
+  <button class="enter-btn" id="enter-btn">進來</button>
+  <button class="disc-open-btn" onclick="showDisclaimer()">使用聲明</button>
+</div>
+
+<div class="screen hidden" id="mood" style="position:relative;">
+  <button class="s-back" onclick="goTo('welcome')">← 返回</button>
+  <p class="pick-title">你現在是什麼狀態？</p>
+  <div class="mood-single">
+    <button class="mood-arr" onclick="moveMood(-1)">‹</button>
+    <div class="mood-label" id="mood-label"></div>
+    <button class="mood-arr" onclick="moveMood(1)">›</button>
+  </div>
+  <button class="nxt vis" id="mood-nxt">繼續 →</button>
+</div>
+
+<div class="screen hidden" id="name-input" style="position:relative;">
+  <button class="s-back" onclick="goTo('mood')">← 返回</button>
+  <p class="name-q">你想讓我怎麼稱呼你？</p>
+  <div class="name-wrap">
+    <input type="text" id="name-field" class="name-field" placeholder="你的名字" maxlength="12" autocomplete="off" oninput="" onkeydown="if(event.key==='Enter')submitName()">
+    <button class="name-submit" onclick="submitName()">→</button>
+  </div>
+  <p class="name-skip" onclick="submitName()">跳過</p>
+</div>
+
+<div class="screen hidden" id="welcome-msg" style="position:relative;">
+  <button class="s-back" onclick="goTo('name-input')">← 返回</button>
+  <p class="wm-text" id="wm-text"></p>
+  <button class="wm-btn" id="wm-btn" onclick="goToSceneSelect()">選擇你想待的地方 →</button>
+</div>
+
+<div class="screen hidden" id="scene-screen" style="padding:0;position:relative;">
+  <div class="carousel-viewport" id="carousel-vp">
+    <div class="carousel-track" id="carousel-track"></div>
+  </div>
+  <button class="c-arrow" id="c-prev" onclick="moveCarousel(-1)">‹</button>
+  <button class="c-arrow" id="c-next" onclick="moveCarousel(1)">›</button>
+  <div class="dot-row" id="dot-row"></div>
+  <button class="s-back" onclick="backToWelcomeMsgScreen()" style="z-index:20;color:rgba(255,255,255,.4);">← 返回</button>
+</div>
+
+<div class="screen hidden" id="sanctuary">
+  <div class="scene-bg" id="scene-bg"></div>
+  <div id="scene-bg-next"></div>
+  <div class="scene-fx" id="scene-fx"></div>
+  <div class="fig-wrap" id="fig-wrap"></div>
+  <div class="msg-center">
+    <div id="msg-container"></div>
+    <div class="sanctuary-tap-hint">輕觸畫面，出現下一句話</div>
+  </div>
+  <div id="time-adjust-hint">可以隨時調整時間</div>
+  <div id="sanctuary-time-panel">
+    <button class="t-btn" data-time="dawn"  onclick="changeTime('dawn',this)">清晨</button>
+    <button class="t-btn" data-time="day"   onclick="changeTime('day',this)">白天</button>
+    <button class="t-btn" data-time="dusk"  onclick="changeTime('dusk',this)">黃昏</button>
+    <button class="t-btn" data-time="night" onclick="changeTime('night',this)">深夜</button>
+  </div>
+</div>
+
+<div id="vol-panel">
+  <div class="vol-row">
+    <span class="vol-label">音樂</span>
+    <input type="range" id="music-vol" min="0" max="100" value="70" oninput="setMusicVol(this.value)">
+  </div>
+  <div class="vol-row">
+    <span class="vol-label">自然音</span>
+    <input type="range" id="noise-vol" min="0" max="100" value="80" oninput="setNoiseVol(this.value)">
+  </div>
+</div>
+
+<button id="mute-btn" onclick="toggleMute()">🔊</button>
+<button id="prev-btn" onclick="backToTimeSelect()">← 上一頁</button>
+<button id="back-btn" onclick="goBack()">← 離開</button>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────
+const moods = [
+  {id:'insomnia',  label:'我睡不著'},
+  {id:'anxiety',   label:'我好害怕'},
+  {id:'depression',label:'我感覺好窒息'},
+  {id:'sadness',   label:'我很難受'},
+  {id:'exhausted', label:'我真的好累'},
+  {id:'numb',      label:'一切都好空虛'},
+  {id:'overwhelm', label:'太多了'},
+];
+
+const scenes = [
+  {
+    id:'clouds', label:'雲朵上', description:'輕輕漂浮，把重量都交給雲',
+    times:{
+      dawn:{grad:'linear-gradient(180deg,#2d1b4e 0%,#8b5cf6 35%,#f4a0c0 70%,#ffd4a8 100%)',desc:'雲是粉紫色的，黎明還沒完全到來',glow:'200,160,255'},
+      day: {grad:'linear-gradient(180deg,#1a4a8a 0%,#3b82f6 40%,#93c5fd 75%,#e0f2fe 100%)',desc:'白雲在藍天裡漂，沒有方向也沒關係',glow:'140,190,255'},
+      dusk:{grad:'linear-gradient(180deg,#7c2d12 0%,#ea580c 30%,#fbbf24 60%,#fde68a 100%)',desc:'夕陽把雲染成橘金色，最溫柔的一刻',glow:'255,180,100'},
+      night:{grad:'linear-gradient(180deg,#0a0a1a 0%,#1e1b4b 50%,#312e81 100%)',desc:'月光把雲照成銀白，整個世界都睡著了',glow:'180,160,255'},
+    }
+  },
+  {
+    id:'ocean', label:'海洋', description:'深深的靜，只有水的聲音',
+    times:{
+      dawn:{grad:'linear-gradient(180deg,#1e3a5f 0%,#1e40af 40%,#0369a1 80%,#0c4a6e 100%)',desc:'海在黎明裡是深藍色的，還沒睡醒',glow:'80,140,220'},
+      day: {grad:'linear-gradient(180deg,#0369a1 0%,#0ea5e9 30%,#22d3ee 60%,#06b6d4 100%)',desc:'陽光穿進水裡，光是流動的',glow:'30,200,230'},
+      dusk:{grad:'linear-gradient(180deg,#7c2d12 0%,#9a3412 20%,#1d4ed8 50%,#1e3a5f 100%)',desc:'海面倒映著橘紅色的天，分不清上下',glow:'200,120,80'},
+      night:{grad:'linear-gradient(180deg,#020617 0%,#0c1445 40%,#0a2340 80%,#051525 100%)',desc:'最深的海，最安靜的黑',glow:'40,80,160'},
+    }
+  },
+  {
+    id:'beach', label:'沙灘上', description:'沙子是溫的，浪聲一遍遍',
+    times:{
+      dawn:{grad:'linear-gradient(180deg,#1e1b4b 0%,#7c3aed 25%,#db7093 55%,#c4955a 80%,#d4a76a 100%)',desc:'沙灘上還沒有人，只有海浪聲',glow:'180,140,100'},
+      day: {grad:'linear-gradient(180deg,#0ea5e9 0%,#38bdf8 25%,#fde68a 65%,#d4a76a 100%)',desc:'沙是暖的，曬了一整天',glow:'220,180,80'},
+      dusk:{grad:'linear-gradient(180deg,#dc2626 0%,#f97316 25%,#fbbf24 50%,#92400e 80%,#78350f 100%)',desc:'浪打上來的地方反光，光很柔',glow:'240,140,60'},
+      night:{grad:'linear-gradient(180deg,#0f172a 0%,#1e293b 40%,#334155 70%,#713f12 100%)',desc:'月光照在沙上，整片沙灘都是你的',glow:'120,120,180'},
+    }
+  },
+  {
+    id:'forest', label:'森林裡', description:'葉子的聲音，把一切都蓋住了',
+    times:{
+      dawn:{grad:'linear-gradient(180deg,#064e3b 0%,#065f46 40%,#047857 70%,#059669 100%)',desc:'晨霧還沒散，光從葉縫透進來',glow:'80,200,120'},
+      day: {grad:'linear-gradient(180deg,#14532d 0%,#15803d 30%,#16a34a 60%,#22c55e 100%)',desc:'樹影斑駁，風吹過去的聲音',glow:'60,200,80'},
+      dusk:{grad:'linear-gradient(180deg,#713f12 0%,#92400e 20%,#166534 50%,#14532d 100%)',desc:'光線變得金黃，森林在低語',glow:'180,160,60'},
+      night:{grad:'linear-gradient(180deg,#020617 0%,#052e16 40%,#064e3b 80%,#022c22 100%)',desc:'蟲鳴聲遠遠的，螢火蟲還在',glow:'100,200,100'},
+    }
+  },
+  {
+    id:'pool', label:'泳池裡', description:'水托著你，不需要力氣',
+    times:{
+      dawn:{grad:'linear-gradient(180deg,#1e3a5f 0%,#1d4ed8 50%,#0369a1 100%)',desc:'水面沒有漣漪，映著剛亮的天',glow:'80,160,240'},
+      day: {grad:'linear-gradient(180deg,#0284c7 0%,#0ea5e9 40%,#38bdf8 100%)',desc:'水是透明的，光在池底搖晃',glow:'60,200,240'},
+      dusk:{grad:'linear-gradient(180deg,#7c2d12 0%,#1d4ed8 40%,#1e3a5f 100%)',desc:'水裡有橘色的倒影',glow:'200,120,100'},
+      night:{grad:'linear-gradient(180deg,#020617 0%,#0c1445 50%,#0a2340 100%)',desc:'水面很黑很靜，像另一個宇宙',glow:'60,80,180'},
+    }
+  },
+  {
+    id:'rain', label:'雨裡', description:'雨聲是世界上最好的掩護',
+    times:{
+      dawn:{grad:'linear-gradient(180deg,#1e1b4b 0%,#312e81 40%,#1e293b 80%,#0f172a 100%)',desc:'清晨的雨是細的，打在葉子上',glow:'140,140,200'},
+      day: {grad:'linear-gradient(180deg,#1e293b 0%,#334155 40%,#475569 80%,#1e293b 100%)',desc:'雨聲蓋住了所有的聲音',glow:'160,170,200'},
+      dusk:{grad:'linear-gradient(180deg,#292524 0%,#1c1917 40%,#1e293b 80%,#0f172a 100%)',desc:'傍晚的雨有一股泥土的味道',glow:'160,130,120'},
+      night:{grad:'linear-gradient(180deg,#020617 0%,#0f172a 40%,#1e1b4b 80%,#020617 100%)',desc:'夜雨是最安全的聲音',glow:'100,100,180'},
+    }
+  },
+];
+
+// Time-based music styles
+const timeMusic = {
+  dawn: {
+    // Very sparse, high register, awakening light — D major pentatonic high octave
+    scale: [587.3, 659.3, 739.9, 880.0, 987.8],
+    gain: 0.022, interval: [4200, 6500], noteLen: 5.5, octaveShift: false,
+    desc: '清晨的音符，像第一道光'
+  },
+  day: {
+    // Warm, grounded — G major pentatonic mid register, gentle harmony
+    scale: [196.0, 220.0, 246.9, 293.7, 329.6, 392.0],
+    gain: 0.026, interval: [2800, 4200], noteLen: 4.2, octaveShift: true,
+    desc: '白天的音調，篤定而溫暖'
+  },
+  dusk: {
+    // Bittersweet, descending — A minor pentatonic
+    scale: [440.0, 349.2, 293.7, 261.6, 220.0],
+    gain: 0.024, interval: [5000, 7500], noteLen: 6.0, octaveShift: false,
+    desc: '黃昏的旋律，像光在慢慢收'
+  },
+  night: {
+    // Minimal, deep bass — barely there
+    scale: [55.0, 65.4, 73.4, 87.3],
+    gain: 0.018, interval: [7000, 11000], noteLen: 8.0, octaveShift: false,
+    desc: '深夜的聲音，幾乎是沉默'
+  },
+};
+
+const messages = {
+insomnia:['不用睡著，只是躺著就好。','夜晚很長，但你不是一個人在裡面。','閉上眼睛，或不閉也沒關係。','你的呼吸，我聽著。','不用想明天的事。','就這樣，慢慢的。','夜晚也有它的溫柔。','不是每個夜晚都需要答案。','讓思緒慢慢飄過去。','你的身體很累了，讓它休息。','不用強迫自己。','黑暗是安全的。','安靜也是一種陪伴。','時間在這裡走得很慢。','沒有什麼是現在必須解決的。','你可以在這裡等到天亮。','心跳的聲音，很穩。','把今天放下，明天再說。','夜裡的擔心，往往比實際的大。','只是在這裡，沒有別的要求。','不用解釋為什麼睡不著。','這一刻，你是安全的。','讓眼睛休息，就算不睡。','你不需要做到什麼。','慢慢地，慢慢地。','這個夜晚也會過去。','你的身體知道怎麼休息。','不用跟睡眠戰鬥。','漂著就好。','我陪著你到天亮。','有些夜晚就是長這樣。','不用擔心明天會怎樣。','你已經很努力了。','讓緊繃的地方放鬆一點。','呼吸，再呼吸。','黎明一定會來。','你不用一個人撐著夜晚。','就讓夜晚陪著你。','不睡也沒關係，真的。','輕輕的，輕輕的。','你的心很累，我知道。','把那些念頭輕輕放開。','今晚不需要任何答案。','一呼一吸，這樣就好。','安靜地在這裡。','不管睡不睡得著，我都在。','讓身體沉進去。','夜晚沒有你想的那麼可怕。','你只需要躺著。','在這裡，沒有時間的壓力。'],
+anxiety:['不需要現在就想清楚。','你是安全的。','讓那些念頭飄過去，不用抓住它們。','我在這裡，哪裡也不去。','先吐一口氣。','現在只有這一刻。','你不需要把每件事都控制好。','恐懼只是一種感覺，會過去的。','把注意力放到呼吸上來。','你比你想的更勇敢。','不用現在就解決所有事。','這裡是安全的地方。','慢慢來，沒有人在催你。','你的身體在保護你，它想幫你。','把肩膀放下來一點。','讓那個緊繃慢慢鬆開。','沒有什麼是你必須立刻面對的。','你已經做得很好了。','深呼吸，再慢慢吐出去。','焦慮是會退的，像潮水。','你不需要同時想所有事。','先只注意眼前這一刻。','讓感覺存在，不用趕走它。','你是完整的，就算現在這樣。','沒有人要求你現在就好。','把腳踩在地上，感覺地板。','你的心在努力，我知道。','一次一件事就夠了。','這種感覺不會一直在。','你可以在這裡喘口氣。','不用假裝沒事。','讓這裡托著你。','你不需要解釋自己。','放下那個必須完美的要求。','你值得被溫柔對待。','先把這個當下過完就好。','不用預先解決還沒發生的事。','你還在，這就夠了。','慢一點也沒關係。','我不會走。','把那些「如果」放一邊。','你已經承擔很多了。','不用一直想，先停下來。','現在最重要的事是呼吸。','你不是你的焦慮。','讓一切都慢下來。','沒有什麼比你更重要。','你有權利感到害怕。','但你也有權利休息。','在這裡，什麼都不用證明。'],
+depression:['你不需要表現得很好。','就算什麼都不想做，也沒關係。','這種重量，我知道。','你來了，這樣就夠了。','不用解釋，不用說話。','只是讓自己被托著。','你不需要今天就好起來。','感覺不到也沒關係。','你不是因為懶才這樣的。','這種黑暗是真實的，不是你在假裝。','你不需要振作。','只是在這裡就好了。','沒有什麼是你必須做到的。','你值得被照顧，就算現在這樣。','讓那個重量放在這裡。','不用假裝太陽很好。','你是完整的，就算今天很難。','沒有人要求你微笑。','我不會要你想開點。','有些事情就是很難，這是真的。','你不需要解釋你的憂鬱。','讓自己慢下來。','你已經很努力在撐著了。','不需要理由，只是來這裡。','你的感覺是真實的。','在這裡，可以不用堅強。','讓黑暗陪著你，不用趕它走。','你不是弱的，你只是很累。','沒有什麼時間表規定你要好。','我陪著你，就算你感覺不到。','不用說話，我懂。','你不欠任何人振作。','這裡沒有要求。','讓自己被這裡托著。','你已經走了很遠的路。','就算只是躺著，也是在前進。','你不是你的病。','有時候只是需要休息。','你來這裡，我很高興。','不用今天就好。','你的故事還沒結束。','有光的地方，你也在。','把今天交出去。','明天再說，先過今晚。','你不孤單，就算感覺是。','讓自己在這裡存在。','沒有比你更重要的事。','你值得被溫柔對待。','這是你的空間。','在這裡，你可以只是你。'],
+sadness:['哭沒關係，或者不哭也沒關係。','那些傷心是真的。','我不會說很快就好了。','你可以在這裡待很久。','悲傷不是需要被修好的東西。','我陪著你。','讓那個傷心流動。','你不需要假裝沒事。','失去的東西，值得被悲傷。','你有權利傷心。','不用一個人承受這些。','悲傷是愛還在的證明。','讓眼淚出來，它們等很久了。','你不是脆弱，你只是真實。','這種痛是真實的。','我不會讓你一個人。','慢慢來，悲傷有它自己的時間。','你不需要跨過去，可以先在這裡。','讓這裡承接你的悲傷。','你已經很努力了。','不用趕快好起來。','傷心也是生命的一部分。','你感覺到的，都是真的。','我不會要你想開。','有些事情就是很難過。','你可以在這裡哭。','讓它出來，不要壓著。','你不是因為軟弱才哭的。','悲傷需要時間，給自己時間。','你是被愛著的，就算現在感覺不到。','讓這裡接住你。','不用解釋你的眼淚。','你不是一個人在悲傷。','你的心很疼，我知道。','讓那個痛存在，不用趕走它。','慢慢來，真的慢慢來。','你有多愛，你就有多痛，這是真的。','傷心不會永遠這麼重。','但現在可以先承認它很重。','讓自己在這裡脆弱。','你不欠任何人堅強。','悲傷過了，你還是你。','你依然完整。','讓我陪著你這一段。','不管多久，我都在。','你不需要假裝天空是好的。','就算今天很難，你還是撐過來了。','你很勇敢。','謝謝你還在。','你是被記得的。'],
+exhausted:['放下吧，什麼都不用做了。','好好休息，不用管別的。','你已經很努力了。','讓身體沉下去。','這裡很安靜。','沒有人在等你。','把肩膀放下來。','你不欠任何人精力。','什麼都可以之後再說。','讓疲倦好好被感受。','你不需要再撐了。','讓這裡托著你。','不用管任何事。','你的身體需要休息，給它。','不是每件事都緊急。','你可以在這裡停下來。','不用有效率。','讓自己什麼都不是，只是在這裡。','你已經走了很長的路。','現在只需要休息。','把清單放在腦子外面。','你不需要做任何計畫。','讓今天到這裡就好。','你今天已經夠了。','把一切都放下。','不用想著要恢復精力。','就這樣，什麼都不做。','你的價值不是你的生產力。','讓疲憊流進地板。','不用一直跑了。','你可以停下來。','這一刻，沒有任何要求。','讓眼睛閉起來。','你不需要很厲害。','只是存在就夠了。','把那些應該做的先放著。','現在只有你，和這裡。','讓自己被照顧一下。','你是重要的，不是你做的事。','慢下來，再慢下來。','你不需要今天就解決所有事。','先休息，其他的事後。','把重量放在這裡。','你已經承擔很多了。','讓這裡替你承擔一下。','不需要說話，也不需要想。','只是躺著就好。','你值得這個休息。','好好在這裡待著。','你來了，這就夠了。'],
+numb:['感覺不到也沒關係。','空白有時候是一種保護。','你不需要假裝有感覺。','就這樣漂著吧。','我在這裡，就算你感覺不到。','慢慢來。','空白也是一種存在。','你不需要強迫自己感受什麼。','有時候感覺系統需要休息。','你不是壞掉的。','就算什麼都感覺不到，你還在。','讓這個空白存在。','不需要解釋為什麼空空的。','你不欠任何人感受。','這種狀態也是真實的你。','我不會要你「感受更多」。','就在這裡飄著，沒關係。','你的存在本身就夠了。','空白不代表你不在。','讓自己安靜地在這裡。','不用假裝有什麼感覺。','你是安全的，就算麻木著。','有些時候身體需要關機一下。','這不是你的錯。','慢慢地，感覺會回來的。','不過現在不需要急。','就讓自己漂在這裡。','我陪著你，不管有沒有感覺。','你不需要表演情緒。','空的也是完整的。','讓這個靜靜地存在。','你不是因為冷漠才這樣。','有時候太多了，所以感覺不到。','這是一種自我保護。','你很聰明，身體在照顧你。','讓這裡是安全的地方。','不需要說話。','就這樣待著就好。','你不是一個人在這裡漂。','等你準備好，感覺會回來。','現在只需要存在。','讓自己在這裡是安全的。','不管有沒有感覺，你都重要。','你在這裡，就夠了。','我不會讓你一個人漂著。','有時候空白也是一種答案。','你值得被溫柔對待，就算現在這樣。','空空的也是一種在。','你不需要解釋。','我記得你在。'],
+overwhelm:['先停下來。','不用全部處理，不用現在。','只有這個空間存在，其他的先放著。','一件事一件事，或者一件都不用。','你可以在這裡躲一下。','呼吸。','把那些清單暫時關掉。','不是所有事都緊急的。','你不需要現在就解決所有事。','先把自己照顧好。','世界可以等你一下。','你不欠任何人立刻的回應。','讓這裡是個出口。','一切都先放在外面。','現在只有你和這裡。','把那些聲音轉小一點。','不需要全部都處理完。','你已經很努力在撐著了。','先停下來，再說。','你不是機器，可以暫停。','什麼都可以晚一點。','這裡是你可以喘息的地方。','先照顧自己，其他的後來。','你不需要對所有人負責。','讓肩膀放下來。','把腦子裡的清單暫時清掉。','你一個人扛太多了。','讓這裡承接一部分。','不是所有事都需要你。','先給自己一點空間。','把那些應該先放下。','你有權利說「先等一下」。','慢下來，世界不會因此結束。','只有這一刻需要你在。','其他的事可以等。','你來這裡，做得很對。','把所有的事都暫時擱著。','你不需要解釋為什麼需要休息。','先讓自己喘口氣。','一切都可以之後再說。','你是重要的，不是你處理的事。','讓這裡替你擋一下外面的聲音。','先只做一件事：在這裡。','不用想著接下來怎麼辦。','你有能力，但也有極限，這都是真的。','先休息，後面的後面再說。','你來了，這就是你現在能做的最好的事。','把擔心放在門外。','這裡只有你。','慢慢來，真的慢慢來。'],
+};
+
+// ─── WELCOME TEXTS (mood-specific personalized greeting) ──────
+const welcomeTexts = {
+  insomnia:   n=>`${n}，夜晚很漫長，我知道。\n\n在這裡，不需要睡著，不需要努力，只是讓自己輕輕飄著就好。沒有人會催你、評判你、要求你。\n\n你可以選一個想要待著的地方，讓這個夜晚陪著你。`,
+  anxiety:    n=>`${n}，先吐一口氣。\n\n在這裡，那些讓你害怕的事都在門外。沒有人會傷害你、責備你或否定你。我會接住你所有的擔心。\n\n選一個讓你感覺安全的地方，慢慢待著。`,
+  depression: n=>`${n}，你來了，這樣就夠了。\n\n不需要振作，不需要表現，不需要說話。在這裡，你可以只是存在。我接住全部的你，包括那個很沉很重的你。\n\n選一個想躺下的地方，讓自己被托著。`,
+  sadness:    n=>`${n}，那些傷心是真的，我都知道。\n\n在這裡，可以哭，也可以不哭。沒有人會要你想開，我會陪著你。\n\n選一個讓你覺得溫柔的地方，讓眼淚流在這裡就好。`,
+  exhausted:  n=>`${n}，放下吧，什麼都不用做了。\n\n在這裡，沒有任何要求、沒有清單、沒有應該。你的身體和心都太累了，我來照顧你一下。\n\n選一個想休息的地方，讓自己沉下去。`,
+  numb:       n=>`${n}，感覺不到也沒關係。\n\n在這裡，不需要假裝有感覺，空白也是一種存在。你不是壞掉的，就讓自己漂著。\n\n選一個地方，靜靜地待著就好。`,
+  overwhelm:  n=>`${n}，先停下來。\n\n在這裡，外面那些聲音都進不來，那些清單都先放著。你一個人扛太多了，我來替你擋一下。\n\n選一個可以喘口氣的地方，先把自己照顧好。`,
+};
+
+// ─── STATE ────────────────────────────────────────────────────
+const N = scenes.length; // 6
+let selMood=null, selScene=null, selTime=null, moodIdx=0, selName='你';
+let carIdx=1; // 1-based in extended track [clone-last, ...scenes, clone-first]
+let isTransitioning=false, timeReady=false, dragMoved=false;
+let curScreen='welcome';
+let audioCtx=null, gainMaster=null;
+let welcomeNodes=[], sceneNoiseNodes=[], sceneMusicNodes=[];
+let sceneNoiseGain=null, musicVolumeGain=null, noiseVolumeGain=null;
+let muted=false, audioStarted=false;
+let msgList=[], msgIdx=0;
+let msgAutoTimer=null, activeMsgCount=0;
+const MAX_MSGS=3;
+
+// ─── AUDIO ENGINE ──────────────────────────────────────────────
+function ensureAudio() {
+  if (audioStarted) return;
+  audioStarted=true;
+  try {
+    audioCtx = new(window.AudioContext||window.webkitAudioContext)();
+    gainMaster = audioCtx.createGain();
+    gainMaster.gain.value = 0.18;
+    gainMaster.connect(audioCtx.destination);
+    sceneNoiseGain = audioCtx.createGain();
+    sceneNoiseGain.gain.value = 1;
+    noiseVolumeGain = audioCtx.createGain();
+    noiseVolumeGain.gain.value = parseFloat(document.getElementById('noise-vol').value)/100;
+    musicVolumeGain = audioCtx.createGain();
+    musicVolumeGain.gain.value = parseFloat(document.getElementById('music-vol').value)/100;
+    sceneNoiseGain.connect(noiseVolumeGain);
+    noiseVolumeGain.connect(gainMaster);
+    musicVolumeGain.connect(gainMaster);
+    playWelcomeAmbient();
+  } catch(e){}
+}
+
+function makeNoiseBuf(dur) {
+  if (!audioCtx) return null;
+  const len=audioCtx.sampleRate*dur;
+  const buf=audioCtx.createBuffer(1,len,audioCtx.sampleRate);
+  const d=buf.getChannelData(0);
+  for(let i=0;i<len;i++) d[i]=Math.random()*2-1;
+  return buf;
+}
+// Pink noise (1/f spectrum) — warm natural texture, like open air or rustling leaves
+function makePinkNoiseBuf(dur) {
+  if(!audioCtx) return null;
+  const sr=audioCtx.sampleRate, len=sr*dur;
+  const buf=audioCtx.createBuffer(1,len,sr);
+  const d=buf.getChannelData(0);
+  let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;
+  for(let i=0;i<len;i++){
+    const w=Math.random()*2-1;
+    b0=0.99886*b0+w*0.0555179;
+    b1=0.99332*b1+w*0.0750759;
+    b2=0.96900*b2+w*0.1538520;
+    b3=0.86650*b3+w*0.3104856;
+    b4=0.55000*b4+w*0.5329522;
+    b5=-0.7616*b5-w*0.0168980;
+    d[i]=(b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11;
+    b6=w*0.115926;
+  }
+  return buf;
+}
+// Brown noise (-6dB/octave) — deep full rumble, like heavy rain or waterfall
+function makeBrownNoiseBuf(dur) {
+  if(!audioCtx) return null;
+  const sr=audioCtx.sampleRate, len=sr*dur;
+  const buf=audioCtx.createBuffer(1,len,sr);
+  const d=buf.getChannelData(0);
+  let last=0;
+  for(let i=0;i<len;i++){
+    const w=Math.random()*2-1;
+    last=(last+0.02*w)/1.02;
+    d[i]=last*3.5;
+  }
+  return buf;
+}
+
+function stopNodes(arr) {
+  arr.forEach(n=>{try{if(n.stop)n.stop();if(n.disconnect)n.disconnect();}catch(e){}});
+  arr.length=0;
+}
+
+function clickSound() {
+  if(!audioCtx) return;
+  const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+  o.type='sine'; o.frequency.value=1300;
+  g.gain.setValueAtTime(0.1,audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.065);
+  o.connect(g); g.connect(gainMaster);
+  o.start(); o.stop(audioCtx.currentTime+0.08);
+}
+
+// Welcome ambient — gentle pentatonic arpeggios
+function playWelcomeAmbient() {
+  stopNodes(welcomeNodes);
+  if(!audioCtx) return;
+  const scale=[261.6,293.7,329.6,392.0,440.0,523.3];
+  function sched() {
+    if(!audioCtx||audioCtx.state==='closed') return;
+    const f=scale[Math.floor(Math.random()*scale.length)]*(Math.random()<.45?1:2);
+    const o=audioCtx.createOscillator(), e=audioCtx.createGain();
+    o.type='sine'; o.frequency.value=f;
+    const t=audioCtx.currentTime;
+    e.gain.setValueAtTime(0,t);
+    e.gain.linearRampToValueAtTime(0.032,t+1.4);
+    e.gain.linearRampToValueAtTime(0,t+4.8);
+    o.connect(e); e.connect(gainMaster);
+    o.start(t); o.stop(t+5.2);
+    welcomeNodes.push(o);
+    const tid=setTimeout(sched,1700+Math.random()*1800);
+    welcomeNodes.push({stop:()=>clearTimeout(tid),disconnect:()=>{}});
+  }
+  sched(); setTimeout(sched,800);
+}
+
+// Scene white noise — quieter, scene-specific
+function playSceneNoise(sceneId) {
+  stopNodes(sceneNoiseNodes);
+  if(!audioCtx||!sceneNoiseGain) return;
+  const nb=makeNoiseBuf(5);
+  if(!nb) return;
+
+  // 1-second fade in via sceneNoiseGain
+  const t0=audioCtx.currentTime;
+  sceneNoiseGain.gain.cancelScheduledValues(t0);
+  sceneNoiseGain.gain.setValueAtTime(0,t0);
+  sceneNoiseGain.gain.linearRampToValueAtTime(1,t0+1.0);
+
+  function addLayer(buf,filterType,freq,q,gainVal,playbackRate) {
+    const src=audioCtx.createBufferSource();
+    src.buffer=buf; src.loop=true;
+    if(playbackRate) src.playbackRate.value=playbackRate;
+    const f=audioCtx.createBiquadFilter();
+    f.type=filterType; f.frequency.value=freq;
+    if(q) f.Q.value=q;
+    const g=audioCtx.createGain(); g.gain.value=gainVal;
+    src.connect(f); f.connect(g); g.connect(sceneNoiseGain);
+    src.start(); return {src,g,f};
+  }
+  function addLFO(gainNode,rate,depth) {
+    const lfo=audioCtx.createOscillator(), lg=audioCtx.createGain();
+    lfo.frequency.value=rate; lg.gain.value=depth;
+    lfo.connect(lg); lg.connect(gainNode.gain); lfo.start();
+    return lfo;
+  }
+
+  if(sceneId==='ocean') {
+    // Ocean: deep wave rumble + mid surge
+    const l1=addLayer(nb,'lowpass',80,0.5,0.32);
+    const l2=addLayer(nb,'bandpass',280,0.4,0.15,0.75);
+    const lfo1=addLFO(l1.g,0.09,0.14);
+    const lfo2=addLFO(l2.g,0.12,0.08);
+    sceneNoiseNodes.push(l1.src,l2.src,lfo1,lfo2);
+    scheduleBubbles();
+  } else if(sceneId==='pool') {
+    // Pool: 100% 水中音 ASMR — immersive underwater (brown noise base for depth + muffled mid resonance)
+    const bnb2=makeBrownNoiseBuf(5);
+    const l1=addLayer(bnb2,'lowpass',60,0.5,0.24);    // deep water pressure (brown noise)
+    const l2=addLayer(bnb2,'bandpass',90,3.0,0.16);   // underwater resonance hum
+    const l3=addLayer(nb,'lowpass',200,1.5,0.10);     // muffled water body texture
+    const l4=addLayer(nb,'bandpass',400,2.0,0.05);    // subtle mid presence (underwater character)
+    const l5=addLayer(bnb2,'bandpass',160,1.8,0.08);  // low-mid underwater envelope
+    // Very slow deep current pulsing
+    const lfo1=addLFO(l1.g,0.035,0.10); // ~28s deep pressure swell
+    const lfo2=addLFO(l2.g,0.055,0.07);
+    const lfo3=addLFO(l5.g,0.045,0.04);
+    sceneNoiseNodes.push(l1.src,l2.src,l3.src,l4.src,l5.src,lfo1,lfo2,lfo3);
+    // Soft muffled bubble sounds — heavily filtered, deep, slow
+    function poolBubble() {
+      if(!audioCtx||audioCtx.state==='closed') return;
+      const nb2=makeBrownNoiseBuf(0.35);
+      if(!nb2) return;
+      const s=audioCtx.createBufferSource();
+      const f1=audioCtx.createBiquadFilter(), f2=audioCtx.createBiquadFilter();
+      const e=audioCtx.createGain();
+      s.buffer=nb2;
+      f1.type='lowpass'; f1.frequency.value=120; f1.Q.value=2.0;
+      f2.type='bandpass'; f2.frequency.value=80+Math.random()*60; f2.Q.value=1.5;
+      const t=audioCtx.currentTime;
+      e.gain.setValueAtTime(0,t);
+      e.gain.linearRampToValueAtTime(0.06+Math.random()*0.03,t+0.06);
+      e.gain.exponentialRampToValueAtTime(0.001,t+0.30);
+      s.connect(f1); f1.connect(f2); f2.connect(e); e.connect(sceneNoiseGain);
+      s.start(t); s.stop(t+0.40);
+      const tid=setTimeout(poolBubble, 1500+Math.random()*4000);
+      sceneNoiseNodes.push({stop:()=>clearTimeout(tid),disconnect:()=>{}});
+    }
+    poolBubble();
+    setTimeout(poolBubble,2200);
+  } else if(sceneId==='beach') {
+    // Beach: wave rush + high foam
+    const l1=addLayer(nb,'lowpass',180,0.5,0.28);
+    const l2=addLayer(nb,'highpass',2000,0.8,0.07,1.4);
+    const lfo1=addLFO(l1.g,0.13,0.16);
+    const lfo2=addLFO(l2.g,0.17,0.05);
+    sceneNoiseNodes.push(l1.src,l2.src,lfo1,lfo2);
+  } else if(sceneId==='forest') {
+    // Forest: slow wind gusts through leaves (very slow LFO, no tremolo)
+    const l1=addLayer(nb,'bandpass',380,0.7,0.24);   // main leaf rustle
+    const l2=addLayer(nb,'bandpass',1100,1.2,0.09,1.3); // higher leaf layer
+    const lfo1=addLFO(l1.g,0.08,0.16); // ~12s wind gust cycle
+    const lfo2=addLFO(l2.g,0.11,0.07); // slightly faster upper layer
+    sceneNoiseNodes.push(l1.src,l2.src,lfo1,lfo2);
+  } else if(sceneId==='rain') {
+    // Rain: 雷雨聲助眠 — full heavy rainstorm, brown noise body + rolling thunder
+    const bnb=makeBrownNoiseBuf(5);
+    const l1=addLayer(bnb,'bandpass',500,0.35,0.17);   // deep rain body (brown noise — full & warm)
+    const l2=addLayer(bnb,'bandpass',1200,0.5,0.10);   // mid rain thickness
+    const l3=addLayer(nb,'bandpass',2800,0.55,0.07);   // rain patter texture (white noise)
+    const l4=addLayer(nb,'bandpass',5000,1.0,0.022);   // high rain hiss/spray
+    const l5=addLayer(bnb,'lowpass',70,0.5,0.08);      // constant deep pressure bed
+    const lfo1=addLFO(l1.g,0.04,0.15); // ~25s slow rain intensity swell
+    const lfo2=addLFO(l2.g,0.06,0.08);
+    const lfo3=addLFO(l3.g,0.075,0.05);
+    sceneNoiseNodes.push(l1.src,l2.src,l3.src,l4.src,l5.src,lfo1,lfo2,lfo3);
+    // Subtle roof drops — brown noise micro-burst, blend into the rain bed
+    function raindrop() {
+      if(!audioCtx||audioCtx.state==='closed') return;
+      const nb2=makeBrownNoiseBuf(0.04);
+      if(!nb2) return;
+      const s=audioCtx.createBufferSource(), f=audioCtx.createBiquadFilter(), e=audioCtx.createGain();
+      s.buffer=nb2;
+      f.type='bandpass'; f.frequency.value=800+Math.random()*1400; f.Q.value=1.8;
+      const t=audioCtx.currentTime;
+      e.gain.setValueAtTime(0.013+Math.random()*0.011,t);
+      e.gain.exponentialRampToValueAtTime(0.001,t+0.035);
+      s.connect(f); f.connect(e); e.connect(sceneNoiseGain);
+      s.start(t); s.stop(t+0.05);
+      const tid=setTimeout(raindrop, 30+Math.random()*100);
+      sceneNoiseNodes.push({stop:()=>clearTimeout(tid),disconnect:()=>{}});
+    }
+    // Thunder: deep rolling rumble — double-filtered brown noise, dramatic but soothing
+    function thunder() {
+      if(!audioCtx||audioCtx.state==='closed') return;
+      const dur=6+Math.random()*5;
+      const tb=makeBrownNoiseBuf(dur+1.5);
+      if(!tb) return;
+      const s=audioCtx.createBufferSource();
+      const f1=audioCtx.createBiquadFilter(), f2=audioCtx.createBiquadFilter();
+      const e=audioCtx.createGain();
+      s.buffer=tb;
+      f1.type='lowpass'; f1.frequency.value=130; f1.Q.value=0.8;
+      f2.type='lowpass'; f2.frequency.value=200; f2.Q.value=0.5;
+      const t=audioCtx.currentTime;
+      const peak=0.32+Math.random()*0.14;
+      e.gain.setValueAtTime(0,t);
+      e.gain.linearRampToValueAtTime(peak*0.4,t+0.6);    // initial rumble crack
+      e.gain.linearRampToValueAtTime(peak,t+1.6);        // rolling build
+      e.gain.setValueAtTime(peak,t+2.5);                 // sustain peak
+      e.gain.linearRampToValueAtTime(peak*0.3,t+dur*0.6);// slow decay
+      e.gain.exponentialRampToValueAtTime(0.001,t+dur+1); // fade to silence
+      s.connect(f1); f1.connect(f2); f2.connect(e); e.connect(sceneNoiseGain);
+      s.start(t); s.stop(t+dur+1.5);
+      const tid=setTimeout(thunder, 10000+Math.random()*18000);
+      sceneNoiseNodes.push({stop:()=>clearTimeout(tid),disconnect:()=>{}});
+    }
+    raindrop();
+    setTimeout(raindrop,35); setTimeout(raindrop,70);
+    setTimeout(thunder, 3000+Math.random()*5000);
+  } else if(sceneId==='clouds') {
+    // Clouds: 天空白噪音 — pink noise for warm natural sky ambient (1/f spectrum)
+    const pnb=makePinkNoiseBuf(5);
+    const l1=addLayer(pnb,'lowpass',5500,0.5,0.09);   // main pink noise body — smooth, warm, open
+    const l2=addLayer(pnb,'bandpass',350,0.35,0.04);  // subtle low-mid warmth
+    const l3=addLayer(pnb,'bandpass',1200,0.5,0.02);  // gentle mid air presence
+    // Extremely slow, almost imperceptible drift
+    const lfo1=addLFO(l1.g,0.022,0.015); // ~45s cycle, barely there
+    sceneNoiseNodes.push(l1.src,l2.src,l3.src,lfo1);
+  }
+}
+
+function scheduleBubbles() {
+  if(!audioCtx||audioCtx.state==='closed') return;
+  const o=audioCtx.createOscillator(), e=audioCtx.createGain();
+  o.type='sine'; o.frequency.value=350+Math.random()*500;
+  e.gain.setValueAtTime(0,audioCtx.currentTime);
+  e.gain.linearRampToValueAtTime(0.028,audioCtx.currentTime+0.012);
+  e.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+0.42);
+  o.connect(e); e.connect(sceneNoiseGain);
+  o.start(); o.stop(audioCtx.currentTime+0.46);
+  const tid=setTimeout(scheduleBubbles,700+Math.random()*3200);
+  sceneNoiseNodes.push({stop:()=>clearTimeout(tid),disconnect:()=>{}});
+}
+
+// Time-based ambient music — layered on top of noise
+function playTimedMusic(timeId) {
+  stopNodes(sceneMusicNodes);
+  if(!audioCtx) return;
+  const cfg=timeMusic[timeId];
+  if(!cfg) return;
+
+  function schedNote() {
+    if(!audioCtx||audioCtx.state==='closed') return;
+    const scale=cfg.scale;
+    let f=scale[Math.floor(Math.random()*scale.length)];
+    if(cfg.octaveShift && Math.random()<0.3) f*=2;
+    const o=audioCtx.createOscillator(), e=audioCtx.createGain();
+    o.type='sine'; o.frequency.value=f;
+    const t=audioCtx.currentTime;
+    const atk=timeId==='night'?2.5:1.5;
+    e.gain.setValueAtTime(0,t);
+    e.gain.linearRampToValueAtTime(cfg.gain,t+atk);
+    e.gain.linearRampToValueAtTime(0,t+cfg.noteLen);
+    const mDst=musicVolumeGain||gainMaster;
+    o.connect(e); e.connect(mDst);
+    o.start(t); o.stop(t+cfg.noteLen+0.2);
+    sceneMusicNodes.push(o);
+
+    // Occasional harmony for day
+    if(timeId==='day' && Math.random()<0.4) {
+      const o2=audioCtx.createOscillator(), e2=audioCtx.createGain();
+      o2.type='sine'; o2.frequency.value=f*1.5;
+      e2.gain.setValueAtTime(0,t+0.3);
+      e2.gain.linearRampToValueAtTime(cfg.gain*0.55,t+atk+0.3);
+      e2.gain.linearRampToValueAtTime(0,t+cfg.noteLen);
+      o2.connect(e2); e2.connect(mDst);
+      o2.start(t+0.3); o2.stop(t+cfg.noteLen+0.2);
+      sceneMusicNodes.push(o2);
+    }
+
+    const delay=cfg.interval[0]+Math.random()*(cfg.interval[1]-cfg.interval[0]);
+    const tid=setTimeout(schedNote,delay);
+    sceneMusicNodes.push({stop:()=>clearTimeout(tid),disconnect:()=>{}});
+  }
+  schedNote();
+  // Stagger second voice
+  const tid=setTimeout(schedNote,cfg.interval[0]*0.6);
+  sceneMusicNodes.push({stop:()=>clearTimeout(tid),disconnect:()=>{}});
+}
+
+function toggleMute() {
+  muted=!muted;
+  if(gainMaster) gainMaster.gain.value=muted?0:0.18;
+  document.getElementById('mute-btn').textContent=muted?'🔇':'🔊';
+}
+function setMusicVol(v) {
+  if(musicVolumeGain) musicVolumeGain.gain.value=v/100;
+}
+function setNoiseVol(v) {
+  if(noiseVolumeGain) noiseVolumeGain.gain.value=v/100;
+}
+
+// ─── DISCLAIMER ────────────────────────────────────────────────
+function showDisclaimer() { document.getElementById('disc-modal').classList.add('vis'); }
+function hideDisclaimer() { document.getElementById('disc-modal').classList.remove('vis'); }
+
+// ─── NAME INPUT ────────────────────────────────────────────────
+function submitName() {
+  const f=document.getElementById('name-field');
+  selName=(f.value.trim())||'你';
+  clickSound();
+  showWelcomeMsg();
+}
+function showWelcomeMsg() {
+  goTo('welcome-msg');
+  const mood=selMood?selMood.id:'exhausted';
+  const fn=welcomeTexts[mood]||((n)=>`${n}，我在這裡，你來了就夠了。`);
+  const textEl=document.getElementById('wm-text');
+  const btnEl=document.getElementById('wm-btn');
+  textEl.textContent=fn(selName);
+  textEl.classList.remove('show');
+  btnEl.classList.remove('vis');
+  setTimeout(()=>textEl.classList.add('show'),120);
+  setTimeout(()=>btnEl.classList.add('vis'),2800);
+}
+function goToSceneSelect() {
+  clickSound();
+  goTo('scene-screen');
+  playSceneNoise(scenes[getRealIdx()].id);
+}
+function backToWelcomeMsgScreen() {
+  clickSound();
+  stopNodes(sceneNoiseNodes); stopNodes(sceneMusicNodes);
+  goTo('welcome-msg');
+}
+
+// ─── NAVIGATION ────────────────────────────────────────────────
+function goTo(id) {
+  document.getElementById(curScreen).classList.add('hidden');
+  document.getElementById(id).classList.remove('hidden');
+  curScreen=id;
+}
+
+function goBack() {
+  clearSanctuaryMsgs();
+  stopNodes(sceneNoiseNodes); stopNodes(sceneMusicNodes);
+  stopNodes(welcomeNodes);
+  audioStarted=false; audioCtx=null; gainMaster=null; sceneNoiseGain=null; musicVolumeGain=null; noiseVolumeGain=null;
+  document.getElementById('scene-bg').style.background='';
+  document.getElementById('scene-fx').innerHTML='';
+  document.getElementById('fig-wrap').innerHTML='';
+  document.getElementById('mute-btn').style.display='none';
+  document.getElementById('prev-btn').style.display='none';
+  document.getElementById('back-btn').style.display='none';
+  const tp=document.getElementById('sanctuary-time-panel');
+  if(tp){tp.classList.remove('fade','vis');}
+  const vp=document.getElementById('vol-panel');
+  if(vp){vp.classList.remove('fade','vis');}
+  const th=document.getElementById('time-adjust-hint');
+  if(th){th.classList.remove('fade','vis');}
+  selMood=null; selScene=null; selTime=null; selName='你'; timeReady=false; moodIdx=0;
+  buildMoodPicker();
+  goTo('welcome');
+}
+
+// ─── MOOD PICKER ────────────────────────────────────────────────
+function buildMoodPicker() {
+  moodIdx=0; selMood=moods[0];
+  document.getElementById('mood-label').textContent=moods[0].label;
+}
+function moveMood(dir) {
+  ensureAudio(); clickSound();
+  moodIdx=(moodIdx+dir+moods.length)%moods.length;
+  selMood=moods[moodIdx];
+  const el=document.getElementById('mood-label');
+  el.style.opacity='0';
+  setTimeout(()=>{ el.textContent=moods[moodIdx].label; el.style.opacity='1'; },180);
+}
+
+// ─── INFINITE CAROUSEL ─────────────────────────────────────────
+// Track layout: [clone-of-last, scene0..sceneN-1, clone-of-first]
+// carIdx: 0=clone-last, 1..N=real scenes, N+1=clone-first
+function buildCarousel() {
+  const track=document.getElementById('carousel-track');
+  const dots=document.getElementById('dot-row');
+  track.innerHTML=''; dots.innerHTML='';
+
+  // Extended slides: last clone + all scenes + first clone
+  const extended=[scenes[N-1],...scenes,scenes[0]];
+  extended.forEach((sc,i)=>{
+    const slide=document.createElement('div');
+    slide.className='c-slide';
+    slide.style.background=sc.times.night.grad;
+    const lbl=document.createElement('div');
+    lbl.className='scene-pick-label'; lbl.textContent='選擇一個你想躺著的地方';
+    const pfx=document.createElement('div'); pfx.className='slide-particles';
+    addSceneParticles(pfx,sc.id,true);
+    const ov=document.createElement('div'); ov.className='slide-overlay';
+    const info=document.createElement('div'); info.className='slide-info';
+    info.innerHTML=`<div class="slide-name">${sc.label}</div><div class="slide-desc">${sc.description}</div><div class="slide-tap-hint">點擊選擇這個地方</div>`;
+    slide.appendChild(lbl); slide.appendChild(pfx); slide.appendChild(ov); slide.appendChild(info);
+    // Only real slides (indices 1..N) are selectable
+    const realIdx=i-1;
+    slide.onclick=()=>{ if(!dragMoved && realIdx>=0 && realIdx<N) { ensureAudio(); clickSound(); confirmScene(realIdx); } };
+    track.appendChild(slide);
+  });
+
+  // Dot indicators
+  for(let i=0;i<N;i++){
+    const d=document.createElement('div');
+    d.className='dot'+(i===0?' active':'');
+    dots.appendChild(d);
+  }
+
+  carIdx=1;
+  setPos(1,false);
+  initDrag();
+
+  track.addEventListener('transitionend',e=>{
+    if(e.propertyName!=='transform') return;
+    isTransitioning=false;
+    if(carIdx===0){ setPos(N,false); carIdx=N; }
+    else if(carIdx===N+1){ setPos(1,false); carIdx=1; }
+    updateDots();
+    if(audioCtx) playSceneNoise(scenes[getRealIdx()].id);
+  });
+}
+
+function setPos(idx,animated) {
+  const track=document.getElementById('carousel-track');
+  if(!track) return;
+  track.style.transition=animated?'transform .5s cubic-bezier(.25,.1,.25,1)':'none';
+  track.style.transform=`translateX(-${idx*100}vw)`;
+}
+
+function moveCarousel(dir) {
+  if(isTransitioning) return;
+  clickSound();
+  isTransitioning=true;
+  carIdx+=dir;
+  setPos(carIdx,true);
+  if(carIdx!==0 && carIdx!==N+1) updateDots();
+}
+
+function getRealIdx() { return((carIdx-1+N)%N); }
+
+function updateDots() {
+  const r=getRealIdx();
+  document.querySelectorAll('.dot').forEach((d,i)=>d.className='dot'+(i===r?' active':''));
+}
+
+let dragStartX=0, dragging=false;
+function initDrag() {
+  const vp=document.getElementById('carousel-vp');
+  if(!vp) return;
+  const gx=e=>e.touches?e.touches[0].clientX:e.clientX;
+  vp.addEventListener('mousedown',e=>{dragStartX=gx(e);dragging=true;dragMoved=false;});
+  vp.addEventListener('touchstart',e=>{dragStartX=gx(e);dragging=true;dragMoved=false;},{passive:true});
+  vp.addEventListener('mousemove',e=>{if(dragging&&Math.abs(gx(e)-dragStartX)>6)dragMoved=true;});
+  vp.addEventListener('touchmove',e=>{if(dragging&&Math.abs(gx(e)-dragStartX)>6)dragMoved=true;},{passive:true});
+  function end(e){
+    if(!dragging)return; dragging=false;
+    const ex=e.changedTouches?e.changedTouches[0].clientX:(e.clientX||dragStartX);
+    const dx=ex-dragStartX;
+    if(dragMoved&&Math.abs(dx)>48) moveCarousel(dx<0?1:-1);
+  }
+  vp.addEventListener('mouseup',end);
+  vp.addEventListener('touchend',end,{passive:true});
+}
+
+// ─── SCENE CONFIRM → ENTER SANCTUARY DIRECTLY ──────────────────
+function confirmScene(realIdx) {
+  selScene=scenes[realIdx];
+  carIdx=realIdx+1;
+  selTime='night'; // default time on entry
+  enterSanctuary();
+}
+
+// ─── SANCTUARY ─────────────────────────────────────────────────
+function enterSanctuary() {
+  stopNodes(welcomeNodes);
+  goTo('sanctuary');
+  document.getElementById('mute-btn').style.display='flex';
+  document.getElementById('prev-btn').style.display='block';
+  document.getElementById('back-btn').style.display='block';
+
+  document.getElementById('scene-bg').style.background=selScene.times[selTime].grad;
+  document.getElementById('scene-bg-next').style.background='';
+  const fx=document.getElementById('scene-fx');
+  fx.innerHTML=''; addSceneParticles(fx,selScene.id,false);
+  renderFigure(selScene.id,selScene.times[selTime].glow);
+
+  playSceneNoise(selScene.id);
+  playTimedMusic(selTime);
+
+  const mood=selMood?selMood.id:'exhausted';
+  msgList=[...messages[mood]]; shuffle(msgList); msgIdx=0;
+  clearSanctuaryMsgs();
+  // First message at 2s, then auto every 14-20s
+  msgAutoTimer=setTimeout(()=>{ addSanctuaryMsg(); schedNextMsg(); },2000);
+
+  // Highlight default time button, show panel with fade
+  const panel=document.getElementById('sanctuary-time-panel');
+  panel.classList.add('vis');
+  setTimeout(()=>panel.classList.add('fade'),80);
+  document.querySelectorAll('#sanctuary-time-panel .t-btn').forEach(b=>{
+    b.classList.toggle('sel',b.dataset.time===selTime);
+  });
+
+  // Show volume sliders and time-adjust hint
+  const vp=document.getElementById('vol-panel');
+  vp.classList.add('vis'); setTimeout(()=>vp.classList.add('fade'),80);
+  const th=document.getElementById('time-adjust-hint');
+  th.classList.add('vis'); setTimeout(()=>th.classList.add('fade'),80);
+
+  document.getElementById('sanctuary').onclick=e=>{
+    if(e.target.closest('#mute-btn')||e.target.closest('#prev-btn')||
+       e.target.closest('#back-btn')||e.target.closest('#sanctuary-time-panel')||
+       e.target.closest('#vol-panel')) return;
+    clickSound();
+    if(activeMsgCount<MAX_MSGS) addSanctuaryMsg();
+    schedNextMsg();
+  };
+}
+
+// Change time within sanctuary — crossfade background + update music
+function changeTime(timeId,btn) {
+  if(timeId===selTime) return;
+  clickSound();
+  const prevTime=selTime;
+  selTime=timeId;
+  document.querySelectorAll('#sanctuary-time-panel .t-btn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+
+  // Background gradient crossfade via overlay div
+  const next=document.getElementById('scene-bg-next');
+  next.style.background=selScene.times[timeId].grad;
+  // force reflow then fade in
+  next.getBoundingClientRect();
+  next.style.opacity='1';
+  setTimeout(()=>{
+    document.getElementById('scene-bg').style.background=selScene.times[timeId].grad;
+    next.style.opacity='0';
+    setTimeout(()=>{ next.style.background=''; },200);
+  },1450);
+
+  // Update figure glow
+  renderFigure(selScene.id,selScene.times[timeId].glow);
+  // Crossfade music
+  playTimedMusic(timeId);
+}
+
+function backToTimeSelect() {
+  clickSound();
+  clearSanctuaryMsgs();
+  stopNodes(sceneNoiseNodes); stopNodes(sceneMusicNodes);
+  // Hide sanctuary time panel, vol panel, time-adjust hint
+  const panel=document.getElementById('sanctuary-time-panel');
+  panel.classList.remove('fade','vis');
+  document.getElementById('vol-panel').classList.remove('fade','vis');
+  document.getElementById('time-adjust-hint').classList.remove('fade','vis');
+  // Clear sanctuary
+  document.getElementById('scene-bg').style.background='';
+  document.getElementById('scene-bg-next').style.background='';
+  document.getElementById('scene-bg-next').style.opacity='0';
+  document.getElementById('scene-fx').innerHTML='';
+  document.getElementById('fig-wrap').innerHTML='';
+  const bubble=document.getElementById('msg-bubble');
+  bubble.classList.remove('show','hide'); bubble.textContent='';
+  document.getElementById('mute-btn').style.display='none';
+  document.getElementById('prev-btn').style.display='none';
+  document.getElementById('back-btn').style.display='none';
+  goTo('scene-screen');
+  // Resume preview noise for last scene
+  if(selScene) playSceneNoise(selScene.id);
+}
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
+
+// ─── MULTI-BUBBLE MESSAGE SYSTEM ───────────────────────────────
+function addSanctuaryMsg() {
+  const container=document.getElementById('msg-container');
+  if(!container) return;
+  // If at max, remove oldest first
+  if(activeMsgCount>=MAX_MSGS){
+    const oldest=container.querySelector('.msg-bubble');
+    if(oldest){ oldest.classList.remove('show'); oldest.classList.add('out'); setTimeout(()=>{if(oldest.parentNode)oldest.parentNode.removeChild(oldest); activeMsgCount=Math.max(0,activeMsgCount-1);},900); }
+    return;
+  }
+  const txt=msgList[msgIdx%msgList.length]; msgIdx++;
+  const el=document.createElement('div'); el.className='msg-bubble';
+  el.textContent=txt; container.appendChild(el); activeMsgCount++;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('show')));
+  // Auto-fade after 10s
+  el._ft=setTimeout(()=>{
+    el.classList.remove('show'); el.classList.add('out');
+    setTimeout(()=>{ if(el.parentNode)el.parentNode.removeChild(el); activeMsgCount=Math.max(0,activeMsgCount-1); },900);
+  },10000);
+}
+function schedNextMsg() {
+  if(msgAutoTimer) clearTimeout(msgAutoTimer);
+  const delay=14000+Math.random()*6000;
+  msgAutoTimer=setTimeout(()=>{ addSanctuaryMsg(); schedNextMsg(); },delay);
+}
+function clearSanctuaryMsgs() {
+  if(msgAutoTimer){ clearTimeout(msgAutoTimer); msgAutoTimer=null; }
+  activeMsgCount=0;
+  const c=document.getElementById('msg-container');
+  if(c) c.innerHTML='';
+}
+
+// ─── SCENE PARTICLES ───────────────────────────────────────────
+function addSceneParticles(el,sceneId,preview) {
+  const sc=preview?40:60;
+  for(let i=0;i<sc;i++){
+    const s=document.createElement('div'); s.className='star';
+    const sz=0.5+Math.random()*1.8;
+    s.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*58}%;width:${sz}px;height:${sz}px;animation-duration:${2+Math.random()*3}s;animation-delay:${Math.random()*3}s;`;
+    el.appendChild(s);
+  }
+  if(sceneId==='clouds'){
+    [{w:200,h:52,t:'18%',l:'5%',d:'72s',dl:'0s'},{w:155,h:42,t:'30%',l:'34%',d:'92s',dl:'-26s'},{w:255,h:62,t:'43%',l:'-4%',d:'108s',dl:'-42s'},{w:168,h:46,t:'54%',l:'54%',d:'82s',dl:'-14s'}].forEach(c=>{
+      const cl=document.createElement('div'); cl.className='cloud-shape';
+      cl.style.cssText=`width:${c.w}px;height:${c.h}px;top:${c.t};left:${c.l};animation-duration:${c.d};animation-delay:${c.dl};`;
+      el.appendChild(cl);
+    });
+  }
+  if(sceneId==='ocean'){
+    const wv=document.createElement('div'); wv.className='wave-sh'; el.appendChild(wv);
+    for(let i=0;i<5;i++){const r=document.createElement('div');r.className='ripple';r.style.cssText=`width:${58+i*27}px;height:${58+i*27}px;left:calc(50% - ${29+i*13}px);top:calc(62% - ${29+i*13}px);animation-delay:${i*.65}s;`;el.appendChild(r);}
+    if(!preview) for(let i=0;i<22;i++){const b=document.createElement('div');b.className='bubble';const sz=2+Math.random()*5;b.style.cssText=`left:${Math.random()*100}%;top:${38+Math.random()*62}%;width:${sz}px;height:${sz}px;animation-duration:${5+Math.random()*9}s;animation-delay:${-Math.random()*9}s;`;el.appendChild(b);}
+  }
+  if(sceneId==='pool'){
+    // Tile grid overlay
+    const tl=document.createElement('div'); tl.className='pool-tiles'; el.appendChild(tl);
+    // Lane dividers (4 lines = 5 lanes)
+    for(let i=1;i<5;i++){const ln=document.createElement('div');ln.className='pool-lane';ln.style.left=`${i*20}%`;el.appendChild(ln);}
+    // Caustic light shimmer blobs
+    const cn=preview?4:8;
+    for(let i=0;i<cn;i++){
+      const c=document.createElement('div');c.className='caustic';
+      const w=55+Math.random()*90,h=28+Math.random()*55;
+      const cx=(Math.random()-.5)*44,cy=(Math.random()-.5)*32;
+      c.style.cssText=`width:${w}px;height:${h}px;left:${Math.random()*88}%;top:${25+Math.random()*65}%;--cx:${cx}px;--cy:${cy}px;animation-duration:${3.5+Math.random()*5}s;animation-delay:${-Math.random()*5}s;`;
+      el.appendChild(c);
+    }
+    // Gentle bubbles rising
+    if(!preview) for(let i=0;i<14;i++){const b=document.createElement('div');b.className='bubble';const sz=1.2+Math.random()*3;b.style.cssText=`left:${Math.random()*100}%;top:${55+Math.random()*44}%;width:${sz}px;height:${sz}px;animation-duration:${7+Math.random()*10}s;animation-delay:${-Math.random()*10}s;`;el.appendChild(b);}
+  }
+  if(sceneId==='beach'){
+    const wv=document.createElement('div');wv.className='wave-sh';wv.style.background='linear-gradient(to top,rgba(100,60,20,.28),transparent)';el.appendChild(wv);
+    for(let i=0;i<30;i++){const s=document.createElement('div');s.className='sand-sp';const sz=0.8+Math.random();s.style.cssText=`left:${Math.random()*100}%;top:${62+Math.random()*36}%;width:${sz}px;height:${sz}px;animation-duration:${1+Math.random()*2}s;animation-delay:${Math.random()*2}s;`;el.appendChild(s);}
+  }
+  if(sceneId==='forest'){
+    for(let i=0;i<18;i++){const f=document.createElement('div');f.className='firefly';const fx=(Math.random()-.5)*70,fy=(Math.random()-.5)*50;f.style.cssText=`left:${Math.random()*100}%;top:${20+Math.random()*65}%;--fx:${fx}px;--fy:${fy}px;animation-duration:${2+Math.random()*4}s;animation-delay:${-Math.random()*4}s;`;el.appendChild(f);}
+    for(let i=0;i<8;i++){const p=document.createElement('div');p.className='leaf-par';const lx=(Math.random()-.5)*50,ly=(Math.random()-.5)*40;p.style.cssText=`left:${Math.random()*100}%;top:${15+Math.random()*70}%;--lx:${lx}px;--ly:${ly}px;animation-duration:${2+Math.random()*3}s;animation-delay:${-Math.random()*3}s;`;el.appendChild(p);}
+  }
+  if(sceneId==='rain'){
+    const cnt=preview?38:85;
+    for(let i=0;i<cnt;i++){const r=document.createElement('div');r.className='rdrop';const h=13+Math.random()*22;r.style.cssText=`left:${Math.random()*100}%;top:0;height:${h}px;animation-duration:${.52+Math.random()*.68}s;animation-delay:${-Math.random()*1.2}s;`;el.appendChild(r);}
+  }
+}
+
+// ─── FIGURE ────────────────────────────────────────────────────
+function renderFigure(sceneId,rgb) {
+  const w=document.getElementById('fig-wrap');
+  w.innerHTML=`<div style="position:relative;display:inline-block;"><div style="position:absolute;width:200px;height:90px;border-radius:50%;bottom:-25px;left:50%;transform:translateX(-50%);background:radial-gradient(ellipse,rgba(${rgb},.18) 0%,transparent 70%);pointer-events:none;"></div><svg class="fig-svg fig-float" viewBox="0 0 140 100" xmlns="http://www.w3.org/2000/svg">${figSVG(sceneId,rgb)}</svg></div>`;
+}
+
+function figSVG(id,rgb){
+  const s=`rgba(${rgb},.88)`,f=`rgba(${rgb},.13)`;
+  if(id==='clouds')return`<ellipse cx="60" cy="78" rx="52" ry="15" fill="rgba(255,255,255,.09)" stroke="rgba(255,255,255,.18)" stroke-width=".8"/><ellipse cx="45" cy="70" rx="20" ry="13" fill="rgba(255,255,255,.07)"/><ellipse cx="62" cy="66" rx="24" ry="15" fill="rgba(255,255,255,.07)"/><ellipse cx="78" cy="71" rx="17" ry="12" fill="rgba(255,255,255,.05)"/><ellipse cx="62" cy="68" rx="28" ry="7" fill="${f}" stroke="${s}" stroke-width="1.1"/><circle cx="86" cy="65" r="7.5" fill="${f}" stroke="${s}" stroke-width="1.1"/><path d="M34 68 Q28 59 37 55 Q44 52 46 60" fill="none" stroke="${s}" stroke-width="1.1" stroke-linecap="round"/>`;
+  if(id==='ocean'||id==='pool')return`<ellipse cx="62" cy="74" rx="50" ry="9" fill="rgba(${rgb},.1)" stroke="rgba(${rgb},.22)" stroke-width=".8"/><ellipse cx="60" cy="70" rx="29" ry="6.5" fill="${f}" stroke="${s}" stroke-width="1.1"/><circle cx="86" cy="66" r="7.5" fill="${f}" stroke="${s}" stroke-width="1.1"/><path d="M42 68 Q35 57 29 62" fill="none" stroke="${s}" stroke-width="1.1" stroke-linecap="round"/><path d="M78 68 Q83 57 76 55" fill="none" stroke="${s}" stroke-width="1.1" stroke-linecap="round"/>`;
+  if(id==='beach')return`<ellipse cx="62" cy="80" rx="54" ry="11" fill="rgba(180,130,60,.18)" stroke="rgba(200,160,80,.18)" stroke-width=".8"/><ellipse cx="60" cy="72" rx="29" ry="7" fill="${f}" stroke="${s}" stroke-width="1.1"/><circle cx="86" cy="67" r="7.5" fill="${f}" stroke="${s}" stroke-width="1.1"/><path d="M86 73 Q90 80 82 82" fill="none" stroke="${s}" stroke-width="1.1" stroke-linecap="round"/>`;
+  if(id==='forest')return`<ellipse cx="62" cy="81" rx="48" ry="9" fill="rgba(30,80,30,.28)" stroke="rgba(60,140,60,.18)" stroke-width=".8"/><ellipse cx="62" cy="73" rx="26" ry="7.5" fill="${f}" stroke="${s}" stroke-width="1.1"/><circle cx="85" cy="68" r="7.5" fill="${f}" stroke="${s}" stroke-width="1.1"/><path d="M36 73 Q29 63 40 58 Q47 55 47 64" fill="none" stroke="${s}" stroke-width="1.1" stroke-linecap="round"/><circle cx="22" cy="50" r="2.2" fill="#b8ff9f" opacity=".88"/><circle cx="22" cy="50" r="5" fill="rgba(180,255,160,.18)"/>`;
+  if(id==='rain')return`<ellipse cx="62" cy="82" rx="46" ry="8" fill="rgba(${rgb},.09)" stroke="rgba(${rgb},.16)" stroke-width=".6"/><ellipse cx="60" cy="72" rx="27" ry="7" fill="${f}" stroke="${s}" stroke-width="1.1"/><circle cx="84" cy="67" r="7.5" fill="${f}" stroke="${s}" stroke-width="1.1"/><path d="M42 70 Q35 62 44 56 Q51 52 52 61" fill="none" stroke="${s}" stroke-width="1.1" stroke-linecap="round"/>`;
+  return`<ellipse cx="62" cy="72" rx="29" ry="7" fill="${f}" stroke="${s}" stroke-width="1.1"/><circle cx="86" cy="67" r="7.5" fill="${f}" stroke="${s}" stroke-width="1.1"/>`;
+}
+
+// ─── INIT ──────────────────────────────────────────────────────
+window.addEventListener('load',()=>{
+  buildMoodPicker(); buildCarousel();
+  setTimeout(()=>document.getElementById('loading').classList.add('gone'),700);
+});
+document.getElementById('enter-btn').onclick=()=>{
+  ensureAudio(); clickSound();
+  buildMoodPicker(); // reset picker on every entry (fixes re-entry bug)
+  goTo('mood');
+};
+document.getElementById('mood-nxt').onclick=()=>{
+  clickSound();
+  document.getElementById('name-field').value=''; // clear previous name
+  goTo('name-input');
+};
+</script>
+</body>
+</html>
